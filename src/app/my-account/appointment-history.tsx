@@ -46,7 +46,7 @@ export function AppointmentHistory({ appointments, loading }: AppointmentHistory
 
     useEffect(() => {
         const fetchClinicNames = async () => {
-            if (!appointments || appointments.length === 0) {
+            if (!firestore || !appointments || appointments.length === 0) {
                 setClinicsLoading(false);
                 return;
             };
