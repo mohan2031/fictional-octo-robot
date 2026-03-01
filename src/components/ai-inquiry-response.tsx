@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Inquiry } from "@/lib/types";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "./ui/dialog";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
+import { Card, CardContent } from "./ui/card";
 
 const initialState = {
   message: "",
@@ -25,27 +25,28 @@ export function AiInquiryResponse({ inquiry }: AiInquiryResponseProps) {
   const [formState, formAction] = useFormState(createInquiryResponse, initialState);
   const [generatedResponse, setGeneratedResponse] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [showResponse, setShowResponse] = useState(false);
 
   useEffect(() => {
-    setIsGenerating(false);
     if (formState.message === "success" && formState.response) {
       setGeneratedResponse(formState.response);
+      setIsGenerating(false);
     } else if (formState.message && formState.message !== "success") {
       toast({
         title: "Error",
         description: formState.message,
         variant: "destructive",
       });
-      setIsOpen(false);
+      setIsGenerating(false);
+      setShowResponse(false);
     }
   }, [formState, toast]);
 
   const handleGenerateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setIsOpen(true);
     setGeneratedResponse("");
     setIsGenerating(true);
+    setShowResponse(true);
     const formData = new FormData();
     formData.append("customerName", inquiry.name);
     formData.append("customerMessage", inquiry.message);
@@ -61,47 +62,43 @@ export function AiInquiryResponse({ inquiry }: AiInquiryResponseProps) {
     });
   }
 
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+  if (!showResponse) {
+    return (
         <Button size="sm" variant="outline" onClick={handleGenerateClick} onFocus={(e) => e.stopPropagation()}>
             <Sparkles className="mr-2 h-4 w-4" />
-            Generate Reply
+            Generate Reply with AI
         </Button>
-      </DialogTrigger>
-      <DialogContent onClick={(e) => e.stopPropagation()}>
-        <DialogHeader>
-          <DialogTitle>AI Generated Reply</DialogTitle>
-          <DialogDescription>
-            Here's a draft response for the message from {inquiry.name}. You can edit it before sending.
-          </DialogDescription>
-        </DialogHeader>
-        {isGenerating ? (
-            <div className="flex items-center justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="ml-4">Generating response...</p>
-            </div>
-        ) : (
-            <div className="space-y-4">
+    );
+  }
+
+  return (
+    <Card className="bg-muted/50 border-dashed">
+        <CardContent className="p-4 space-y-4">
+            <Label htmlFor="ai-response" className="flex items-center gap-2 text-primary font-semibold">
+                <Sparkles className="h-4 w-4" />
+                AI Generated Response
+            </Label>
+            {isGenerating ? (
+                <div className="flex items-center justify-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="ml-4">Generating response...</p>
+                </div>
+            ) : (
                 <div className="space-y-2">
-                    <Label htmlFor="ai-response">Suggested Response</Label>
                     <Textarea 
                         id="ai-response"
                         value={generatedResponse}
                         onChange={(e) => setGeneratedResponse(e.target.value)}
-                        rows={8}
+                        rows={6}
+                        className="bg-background"
                     />
+                     <Button variant="outline" size="sm" onClick={handleCopy}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copy Text
+                    </Button>
                 </div>
-                 <Button variant="outline" size="sm" onClick={handleCopy}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copy Text
-                </Button>
-            </div>
-        )}
-        <DialogFooter>
-            <Button onClick={() => setIsOpen(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            )}
+        </CardContent>
+    </Card>
   );
 }
