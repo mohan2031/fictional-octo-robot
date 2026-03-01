@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { LogOut, Briefcase, ChevronDown } from 'lucide-react';
 import { useUser, useAuth, useFirestore, useCollection } from '@/firebase';
@@ -23,6 +23,11 @@ export function AppHeader() {
   const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -64,7 +69,7 @@ export function AppHeader() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold font-headline text-primary">
             <Briefcase className="h-6 w-6" />
-            <span>RuralReach</span>
+            <span>{isClient ? 'RuralReach' : 'LocalLink'}</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>
