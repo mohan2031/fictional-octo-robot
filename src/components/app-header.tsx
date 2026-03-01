@@ -2,15 +2,19 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, LogOut, ShoppingCart, Briefcase } from 'lucide-react';
-import { useUser, useAuth } from '@/firebase';
+import { LogOut, Briefcase } from 'lucide-react';
+import { useUser, useAuth, useFirestore, useCollection } from '@/firebase';
 import { signOut } from 'firebase/auth';
+import { collection, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function AppHeader() {
-  const { user, loading } = useUser();
+  const { user, loading: userLoading } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -31,6 +35,23 @@ export function AppHeader() {
     }
   };
 
+  const clinicsQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'clinics'), where('ownerId', '==', user.uid));
+  }, [firestore, user]);
+  const { data: ownedClinics, loading: clinicsLoading } = useCollection(clinicsQuery);
+
+  const shopsQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'shops'), where('ownerId', '==', user.uid));
+  }, [firestore, user]);
+  const { data: ownedShops, loading: shopsLoading } = useCollection(shopsQuery);
+
+  const hasClinic = ownedClinics && ownedClinics.length > 0;
+  const hasShop = ownedShops && ownedShops.length > 0;
+  
+  const isLoading = userLoading || clinicsLoading || shopsLoading;
+
   return (
     <header className="bg-card border-b sticky top-0 z-40">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,15 +67,27 @@ export function AppHeader() {
             <Button variant="ghost" asChild>
               <Link href="/shops">Find a Shop</Link>
             </Button>
-            {!loading && (
+            
+            {isLoading && (
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-24" />
+                <Skeleton className="h-9 w-24" />
+              </div>
+            )}
+            
+            {!isLoading && (
               user ? (
                 <>
-                  <Button asChild>
-                    <Link href="/dashboard">Clinic Dashboard</Link>
-                  </Button>
-                   <Button asChild>
-                    <Link href="/shop-dashboard">Shop Dashboard</Link>
-                  </Button>
+                  {hasClinic && (
+                    <Button asChild>
+                      <Link href="/dashboard">Clinic Dashboard</Link>
+                    </Button>
+                  )}
+                  {hasShop && (
+                    <Button asChild>
+                      <Link href="/shop-dashboard">Shop Dashboard</Link>
+                    </Button>
+                  )}
                   <Button variant="outline" size="icon" onClick={handleSignOut} title="Sign Out">
                     <LogOut className="h-4 w-4" />
                   </Button>
@@ -64,11 +97,8 @@ export function AppHeader() {
                   <Button variant="ghost" asChild>
                     <Link href="/login">Login</Link>
                   </Button>
-                   <Button asChild>
-                    <Link href="/signup-shop">Register Shop</Link>
-                  </Button>
                   <Button asChild>
-                    <Link href="/signup">Register Clinic</Link>
+                    <Link href="/register">Register Business</Link>
                   </Button>
                 </>
               )

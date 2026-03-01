@@ -194,6 +194,12 @@ export default function SignupShopPage() {
               Log in
             </Link>
           </div>
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            Not a shop?{" "}
+            <Link href="/signup" className="underline text-primary">
+              Register as a clinic instead
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

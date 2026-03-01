@@ -33,12 +33,13 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
       toast({
         title: "Success",
         description: "Logged in successfully.",
       });
-      router.push('/dashboard');
+      // Redirect to a generic dashboard, the header will handle the correct final destination
+      router.push('/dashboard'); 
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -54,8 +55,8 @@ export default function LoginPage() {
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Clinic Manager Login</CardTitle>
-          <CardDescription>Access your dashboard to manage your clinic.</CardDescription>
+          <CardTitle className="text-2xl">Business Owner Login</CardTitle>
+          <CardDescription>Access your dashboard to manage your clinic or shop.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -75,8 +76,8 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             Don't have an account?{" "}
-            <Link href="/signup" className="underline">
-              Sign up
+            <Link href="/register" className="underline">
+              Register here
             </Link>
           </div>
         </CardContent>
