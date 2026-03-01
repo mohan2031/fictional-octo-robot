@@ -61,7 +61,7 @@ export default async function ShopDetailPage({ params }: { params: { id: string 
               {shop.products.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {shop.products.map(product => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} shopId={shop.id} />
                   ))}
                 </div>
               ) : (

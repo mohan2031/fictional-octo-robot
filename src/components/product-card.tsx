@@ -3,13 +3,16 @@ import type { Product } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Check, Mail, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { InquiryForm } from "@/components/inquiry-form";
 
 interface ProductCardProps {
   product: Product;
+  shopId: string;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, shopId }: ProductCardProps) {
   return (
     <Card className="overflow-hidden flex flex-col">
       <CardHeader className="p-0 relative h-40 w-full">
@@ -32,9 +35,26 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="text-sm text-muted-foreground line-clamp-3">{product.description}</p>
       </CardContent>
       <CardFooter className="p-4 bg-secondary/20">
-        <Button variant="outline" className="w-full">
-          Reserve or Inquire
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <Mail className="mr-2 h-4 w-4"/>
+              Inquire about this
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Send an Inquiry</DialogTitle>
+              <DialogDescription>
+                Ask about availability, price, or other details for the product: <strong>{product.name}</strong>.
+              </DialogDescription>
+            </DialogHeader>
+            <InquiryForm 
+              shopId={shopId} 
+              defaultMessage={`I'm writing to inquire about the product: ${product.name}`} 
+            />
+          </DialogContent>
+        </Dialog>
       </CardFooter>
     </Card>
   );

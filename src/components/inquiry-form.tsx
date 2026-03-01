@@ -23,7 +23,7 @@ const inquirySchema = z.object({
 
 type InquiryFormData = z.infer<typeof inquirySchema>;
 
-export function InquiryForm({ shopId }: { shopId: string }) {
+export function InquiryForm({ shopId, defaultMessage }: { shopId: string, defaultMessage?: string }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const db = useFirestore();
@@ -32,7 +32,7 @@ export function InquiryForm({ shopId }: { shopId: string }) {
     defaultValues: {
       name: "",
       contact: "",
-      message: "",
+      message: defaultMessage || "",
     },
   });
 
