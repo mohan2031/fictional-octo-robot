@@ -74,34 +74,28 @@ export function AppointmentList() {
         }).sort((a, b) => b.appointmentDate.getTime() - a.appointmentDate.getTime());
     }, [appointments]);
 
-    const handleStatusChange = async (appointmentId: string, status: Appointment['status']) => {
+    const handleStatusChange = (appointmentId: string, status: Appointment['status']) => {
         if (!firestore) return;
 
         const appointmentRef = doc(firestore, 'appointments', appointmentId);
-        try {
-            updateDoc(appointmentRef, { status: status })
-                .catch((error) => {
-                    const permissionError = new FirestorePermissionError({
-                        path: appointmentRef.path,
-                        operation: 'update',
-                        requestResourceData: { status },
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                    throw error;
-                });
-            toast({
-                title: "Status Updated",
-                description: `Appointment status changed to ${status}.`,
-            });
-        } catch (error: any) {
-             if (!(error instanceof FirestorePermissionError)) {
+        const updateData = { status };
+
+        updateDoc(appointmentRef, updateData)
+            .then(() => {
                 toast({
-                    title: "Error Updating Status",
-                    description: error.message || "Could not update the appointment.",
-                    variant: "destructive",
+                    title: "Status Updated",
+                    description: `Appointment status changed to ${status}.`,
                 });
-             }
-        }
+            })
+            .catch((serverError) => {
+                console.error("Error updating appointment status:", serverError);
+                const permissionError = new FirestorePermissionError({
+                    path: appointmentRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     };
 
 
