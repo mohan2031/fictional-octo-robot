@@ -80,34 +80,31 @@ export function ShopSearch({ shops }: ShopSearchProps) {
     }
   };
 
-  const filteredAndSortedShops = useMemo(() => {
-    let processedShops = shops.map(shop => {
-        const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, shop.lat, shop.lng) : null;
-        return { ...shop, distance };
-    });
+  let processedShops = shops.map(shop => {
+      const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, shop.lat, shop.lng) : null;
+      return { ...shop, distance };
+  });
+  
+  processedShops = processedShops.filter(shop => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const matchesSearch =
+      shop.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+      shop.description.toLowerCase().includes(lowerCaseSearchTerm);
     
-    processedShops = processedShops.filter(shop => {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      const matchesSearch =
-        shop.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        shop.description.toLowerCase().includes(lowerCaseSearchTerm);
+    const matchesCategory =
+      category === 'All' || shop.category === category;
       
-      const matchesCategory =
-        category === 'All' || shop.category === category;
-        
-      return matchesSearch && matchesCategory;
-    });
+    return matchesSearch && matchesCategory;
+  });
 
-    if (sortBy === 'distance' && userLocation) {
-        processedShops.sort((a, b) => {
-            if (a.distance === null) return 1;
-            if (b.distance === null) return -1;
-            return a.distance - b.distance;
-        });
-    }
-
-    return processedShops;
-  }, [shops, searchTerm, category, userLocation, sortBy]);
+  if (sortBy === 'distance' && userLocation) {
+      processedShops.sort((a, b) => {
+          if (a.distance === null) return 1;
+          if (b.distance === null) return -1;
+          return a.distance - b.distance;
+      });
+  }
+  const filteredAndSortedShops = processedShops;
 
   return (
     <>

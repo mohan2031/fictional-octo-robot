@@ -80,34 +80,32 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
     }
   };
 
-  const filteredAndSortedClinics = useMemo(() => {
-    let processedClinics = clinics.map(clinic => {
-        const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, clinic.lat, clinic.lng) : null;
-        return { ...clinic, distance };
-    });
+  let processedClinics = clinics.map(clinic => {
+      const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, clinic.lat, clinic.lng) : null;
+      return { ...clinic, distance };
+  });
+  
+  processedClinics = processedClinics.filter(clinic => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const matchesSearch =
+      clinic.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+      clinic.description.toLowerCase().includes(lowerCaseSearchTerm);
     
-    processedClinics = processedClinics.filter(clinic => {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      const matchesSearch =
-        clinic.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        clinic.description.toLowerCase().includes(lowerCaseSearchTerm);
+    const matchesCategory =
+      category === 'All' || clinic.category === category;
       
-      const matchesCategory =
-        category === 'All' || clinic.category === category;
-        
-      return matchesSearch && matchesCategory;
-    });
+    return matchesSearch && matchesCategory;
+  });
 
-    if (sortBy === 'distance' && userLocation) {
-        processedClinics.sort((a, b) => {
-            if (a.distance === null) return 1;
-            if (b.distance === null) return -1;
-            return a.distance - b.distance;
-        });
-    }
+  if (sortBy === 'distance' && userLocation) {
+      processedClinics.sort((a, b) => {
+          if (a.distance === null) return 1;
+          if (b.distance === null) return -1;
+          return a.distance - b.distance;
+      });
+  }
+  const filteredAndSortedClinics = processedClinics;
 
-    return processedClinics;
-  }, [clinics, searchTerm, category, userLocation, sortBy]);
 
   return (
     <>
