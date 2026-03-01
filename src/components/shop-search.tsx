@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Shop } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { ShopCard } from '@/components/shop-card';
 import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ShopSearchProps {
   shops: Shop[];
@@ -21,6 +22,11 @@ const ShopMap = dynamic(() => import('@/components/shop-map').then(mod => mod.Sh
 export function ShopSearch({ shops }: ShopSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const categories = useMemo(() => {
     const allCategories = shops.map(shop => shop.category);
@@ -56,18 +62,22 @@ export function ShopSearch({ shops }: ShopSearchProps) {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat === 'All' ? 'All Categories' : cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isClient ? (
+            <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                    {cat === 'All' ? 'All Categories' : cat}
+                    </SelectItem>
+                ))}
+                </SelectContent>
+            </Select>
+          ) : (
+            <Skeleton className="h-10 w-full" />
+          )}
         </div>
       </div>
       
