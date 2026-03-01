@@ -1,9 +1,11 @@
 import type { Clinic, Shop } from './types';
 import { db } from '@/firebase/server';
 import { doc, getDoc, DocumentData, Timestamp } from 'firebase/firestore';
+import { getPlaceholderImage } from './placeholder-images';
 
 const mapDocToClinic = (document: DocumentData): Clinic => {
     const data = document.data();
+    const placeholder = getPlaceholderImage(data.category || 'clinic');
     return {
       id: document.id,
       name: data.name || 'Unnamed Clinic',
@@ -15,8 +17,8 @@ const mapDocToClinic = (document: DocumentData): Clinic => {
       phone: data.phone || 'No phone',
       hours: data.hours || 'Not specified',
       description: data.description || 'No description provided.',
-      imageUrl: data.imageUrl || `https://picsum.photos/seed/${document.id}/600/400`,
-      imageHint: data.imageHint || 'clinic',
+      imageUrl: data.imageUrl || placeholder.imageUrl,
+      imageHint: data.imageHint || placeholder.imageHint,
       ownerId: data.ownerId || '',
       // Firestore timestamps need to be converted to JS Dates for serialization in Server Components
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
@@ -40,6 +42,7 @@ export const getClinicById = async (id: string): Promise<Clinic | null> => {
 
 const mapDocToShop = (document: DocumentData): Shop => {
     const data = document.data();
+    const placeholder = getPlaceholderImage(data.category || 'shop');
     return {
       id: document.id,
       name: data.name || 'Unnamed Shop',
@@ -51,8 +54,8 @@ const mapDocToShop = (document: DocumentData): Shop => {
       phone: data.phone || 'No phone',
       hours: data.hours || 'Not specified',
       description: data.description || 'No description provided.',
-      imageUrl: data.imageUrl || `https://picsum.photos/seed/${document.id}/600/400`,
-      imageHint: data.imageHint || 'shop',
+      imageUrl: data.imageUrl || placeholder.imageUrl,
+      imageHint: data.imageHint || placeholder.imageHint,
       ownerId: data.ownerId || '',
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
       products: data.products || [],

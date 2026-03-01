@@ -18,6 +18,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import type { Clinic } from '@/lib/types';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 
 const clinicCategories: [Clinic['category'], ...Clinic['category'][]] = ['Dentist', 'General Physician', 'Cardiology', 'Pediatrics', 'Dermatology', 'Other'];
@@ -74,6 +75,7 @@ export default function SignupPage() {
       });
 
 
+      const placeholder = getPlaceholderImage(data.category);
       const clinicsRef = collection(firestore, 'clinics');
       const clinicData = {
         name: data.clinicName,
@@ -81,8 +83,8 @@ export default function SignupPage() {
         category: data.category,
         description: `Welcome to ${data.clinicName}!`,
         hours: '9 AM - 5 PM',
-        imageUrl: 'https://picsum.photos/seed/newclinic/600/400',
-        imageHint: 'clinic exterior',
+        imageUrl: placeholder.imageUrl,
+        imageHint: placeholder.imageHint,
         isOpen: true,
         location: data.location,
         lat: 20.5937,

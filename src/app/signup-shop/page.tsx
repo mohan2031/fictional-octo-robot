@@ -18,6 +18,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import type { Shop } from '@/lib/types';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 
 const shopCategories: [Shop['category'], ...Shop['category'][]] = ['Grocery', 'Electronics', 'Plumbing', 'Electrician', 'Other'];
@@ -74,6 +75,7 @@ export default function SignupShopPage() {
       });
 
 
+      const placeholder = getPlaceholderImage(data.category);
       const shopsRef = collection(firestore, 'shops');
       const shopData = {
         name: data.shopName,
@@ -81,8 +83,8 @@ export default function SignupShopPage() {
         category: data.category,
         description: `Welcome to ${data.shopName}!`,
         hours: '9 AM - 5 PM',
-        imageUrl: 'https://picsum.photos/seed/newshop/600/400',
-        imageHint: 'shop exterior',
+        imageUrl: placeholder.imageUrl,
+        imageHint: placeholder.imageHint,
         isOpen: true,
         location: data.location,
         lat: 20.5937,

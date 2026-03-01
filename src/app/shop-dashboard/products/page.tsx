@@ -42,6 +42,7 @@ import { generateProductDescription } from '@/ai/flows/generate-product-descript
 import { v4 as uuidv4 } from 'uuid';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { getPlaceholderImage } from '@/lib/placeholder-images';
 
 
 const productSchema = z.object({
@@ -129,11 +130,12 @@ export default function ProductsPage() {
     }
     setIsSubmitting(true);
     try {
+        const placeholder = getPlaceholderImage(data.name);
         const newProduct: Product = {
             ...data,
             id: uuidv4(),
-            imageUrl: `https://picsum.photos/seed/${uuidv4()}/400/300`,
-            imageHint: 'product',
+            imageUrl: placeholder.imageUrl,
+            imageHint: placeholder.imageHint,
         };
 
         const shopRef = doc(firestore, 'shops', shop.id);
