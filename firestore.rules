@@ -2,20 +2,20 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow anyone to submit an inquiry
     match /inquiries/{inquiryId} {
+      // Anyone can submit an inquiry
       allow create: if true;
-      // For now, allow anyone to read.
-      // In a real app, you should restrict this to the authenticated shop owner.
-      // e.g., allow read: if get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
-      allow read, update: if true;
+      // Only the shop owner can read or update their inquiries
+      allow read, update: if request.auth.uid != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
     }
 
-    // You can add rules for other collections here.
-    // For example, to secure a 'shops' collection:
-    // match /shops/{shopId} {
-    //   allow read: if true;
-    //   allow write: if resource.data.ownerId == request.auth.uid;
-    // }
+    match /shops/{shopId} {
+      // Anyone can view a shop
+      allow read: if true;
+      // A logged-in user can create a shop if they are the owner
+      allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.ownerId;
+      // Only the owner can update their shop details
+      allow update: if request.auth.uid != null && request.auth.uid == resource.data.ownerId;
+    }
   }
 }

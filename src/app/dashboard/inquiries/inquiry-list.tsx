@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Inquiry } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,20 @@ function isTimestamp(value: any): value is Timestamp {
 
 export function InquiryList() {
     const firestore = useFirestore();
-    const shopId = '1'; // Hardcoded for now
+    const { user } = useUser();
+
+    const shopsQuery = useMemo(() => {
+        if (!firestore || !user) return null;
+        return query(
+            collection(firestore, "shops"),
+            where("ownerId", "==", user.uid)
+        );
+    }, [firestore, user]);
+
+    const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
+    
+    // Assuming one shop per owner for now
+    const shopId = shops?.[0]?.id;
 
     const inquiriesQuery = useMemo(() => {
         if (!firestore || !shopId) return null;
@@ -27,10 +40,14 @@ export function InquiryList() {
         );
     }, [firestore, shopId]);
 
-    const { data: inquiries, loading } = useCollection(inquiriesQuery);
+    const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
 
-    if (loading) {
+    if (shopsLoading || inquiriesLoading) {
         return <p>Loading inquiries...</p>;
+    }
+    
+    if (!shops || shops.length === 0) {
+        return <p>You haven't set up a shop yet.</p>;
     }
 
     if (!inquiries || inquiries.length === 0) {
