@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, MapPin } from 'lucide-react';
+import { ArrowRight, MapPin, CheckCircle, XCircle } from 'lucide-react';
 import type { Clinic } from '@/lib/types';
 
 interface ClinicCardProps {
@@ -28,7 +28,8 @@ export function ClinicCard({ clinic }: ClinicCardProps) {
         <div className="flex justify-between items-start mb-2">
           <CardTitle className="text-lg font-bold">{clinic.name}</CardTitle>
           <Badge variant={clinic.isOpen ? 'default' : 'destructive'}>
-            {clinic.isOpen ? 'Open' : 'Closed'}
+            {clinic.isOpen ? <CheckCircle className="mr-1 h-4 w-4" /> : <XCircle className="mr-1 h-4 w-4" />}
+            {clinic.isOpen ? 'Open Now' : 'Closed'}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">{clinic.category}</p>

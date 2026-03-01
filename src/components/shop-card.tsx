@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, MapPin } from 'lucide-react';
+import { ArrowRight, MapPin, CheckCircle, XCircle } from 'lucide-react';
 import type { Shop } from '@/lib/types';
 
 interface ShopCardProps {
@@ -28,7 +28,8 @@ export function ShopCard({ shop }: ShopCardProps) {
         <div className="flex justify-between items-start mb-2">
           <CardTitle className="text-lg font-bold">{shop.name}</CardTitle>
           <Badge variant={shop.isOpen ? 'default' : 'destructive'}>
-            {shop.isOpen ? 'Open' : 'Closed'}
+             {shop.isOpen ? <CheckCircle className="mr-1 h-4 w-4" /> : <XCircle className="mr-1 h-4 w-4" />}
+            {shop.isOpen ? 'Open Now' : 'Closed'}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">{shop.category}</p>
