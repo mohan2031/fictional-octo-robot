@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { collection, query, where, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Shop, Product } from '@/lib/types';
@@ -15,6 +15,18 @@ import {
   DialogTrigger,
   DialogClose
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -24,7 +36,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Sparkles } from 'lucide-react';
+import { Loader2, PlusCircle, Sparkles, Trash2, FileEdit } from 'lucide-react';
 import Image from 'next/image';
 import { generateProductDescription } from '@/ai/flows/generate-product-description-flow';
 import { v4 as uuidv4 } from 'uuid';
@@ -46,9 +58,12 @@ export default function ProductsPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
-  const form = useForm<ProductFormData>({
+  const addForm = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
@@ -57,15 +72,30 @@ export default function ProductsPage() {
     },
   });
 
+  const editForm = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+  });
+
+  useEffect(() => {
+    if (productToEdit) {
+      editForm.reset({
+        name: productToEdit.name,
+        description: productToEdit.description,
+        isAvailable: productToEdit.isAvailable,
+      });
+    }
+  }, [productToEdit, editForm]);
+
+
   const shopsQuery = useMemo(() => {
     if (!firestore || !user) return null;
     return query(collection(firestore, 'shops'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
-  const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
+  const { data: shops, loading: shopsLoading, setData: setShops } = useCollection(shopsQuery);
   const shop = shops?.[0] as Shop | undefined;
 
-  const handleGenerateDescription = async () => {
+  const handleGenerateDescription = async (form: typeof addForm | typeof editForm) => {
     const productName = form.getValues('name');
     if (!productName) {
       toast({
@@ -92,7 +122,7 @@ export default function ProductsPage() {
     }
   };
 
-  const onSubmit = async (data: ProductFormData) => {
+  const handleAddSubmit = async (data: ProductFormData) => {
     if (!firestore || !shop) {
         toast({ title: 'Error', description: 'Shop not found.', variant: 'destructive' });
         return;
@@ -102,13 +132,13 @@ export default function ProductsPage() {
         const newProduct: Product = {
             ...data,
             id: uuidv4(),
-            imageUrl: 'https://picsum.photos/seed/product/400/300',
+            imageUrl: `https://picsum.photos/seed/${uuidv4()}/400/300`,
             imageHint: 'product',
         };
 
         const shopRef = doc(firestore, 'shops', shop.id);
         
-        updateDoc(shopRef, {
+        await updateDoc(shopRef, {
             products: arrayUnion(newProduct)
         }).catch((error) => {
             const permissionError = new FirestorePermissionError({
@@ -124,8 +154,8 @@ export default function ProductsPage() {
             title: 'Product Added!',
             description: `${data.name} has been added to your shop.`,
         });
-        form.reset();
-        setIsDialogOpen(false);
+        addForm.reset();
+        setIsAddDialogOpen(false);
     } catch (error: any) {
          if (!(error instanceof FirestorePermissionError)) {
             toast({
@@ -138,6 +168,71 @@ export default function ProductsPage() {
         setIsSubmitting(false);
     }
   };
+  
+  const handleEditSubmit = async (data: ProductFormData) => {
+    if (!firestore || !shop || !productToEdit) {
+      toast({ title: 'Error', description: 'Shop or product not found.', variant: 'destructive' });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const shopRef = doc(firestore, 'shops', shop.id);
+      
+      const updatedProducts = shop.products.map(p =>
+        p.id === productToEdit.id ? { ...p, ...data } : p
+      );
+
+      await updateDoc(shopRef, { products: updatedProducts });
+
+      toast({
+        title: 'Product Updated!',
+        description: `${data.name} has been updated.`,
+      });
+      setProductToEdit(null);
+    } catch (error: any) {
+      console.error("Error updating product:", error);
+      const permissionError = new FirestorePermissionError({
+          path: doc(firestore, 'shops', shop.id).path,
+          operation: 'update',
+          requestResourceData: { products: "..." },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!firestore || !shop || !productToDelete) {
+      toast({ title: 'Error', description: 'Shop or product not found.', variant: 'destructive' });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const shopRef = doc(firestore, 'shops', shop.id);
+      
+      const updatedProducts = shop.products.filter(p => p.id !== productToDelete.id);
+
+      await updateDoc(shopRef, { products: updatedProducts });
+
+      toast({
+        title: 'Product Deleted!',
+        description: `${productToDelete.name} has been removed from your shop.`,
+      });
+      setProductToDelete(null);
+    } catch (error: any) {
+      console.error("Error deleting product:", error);
+      const permissionError = new FirestorePermissionError({
+          path: doc(firestore, 'shops', shop.id).path,
+          operation: 'update',
+          requestResourceData: { products: "..." },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   if (shopsLoading) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -154,7 +249,7 @@ export default function ProductsPage() {
             <h2 className="text-3xl font-bold font-headline">Manage Products</h2>
             <p className="text-muted-foreground">Add, edit, or remove products from your shop.</p>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
                     <Button>
                     <PlusCircle className="mr-2 h-4 w-4" />
@@ -168,24 +263,24 @@ export default function ProductsPage() {
                         Fill in the details for your new product. Click "Save product" when you're done.
                     </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+                    <form onSubmit={addForm.handleSubmit(handleAddSubmit)} className="space-y-4 pt-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Product Name</Label>
-                            <Input id="name" {...form.register('name')} />
-                            {form.formState.errors.name && <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>}
+                            <Input id="name" {...addForm.register('name')} />
+                            {addForm.formState.errors.name && <p className="text-sm text-destructive">{addForm.formState.errors.name.message}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="description">Product Description</Label>
-                            <Textarea id="description" {...form.register('description')} rows={5} />
-                             <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                            <Textarea id="description" {...addForm.register('description')} rows={5} />
+                             <Button type="button" variant="outline" size="sm" onClick={() => handleGenerateDescription(addForm)} disabled={isGenerating}>
                                 {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                                 Generate with AI
                             </Button>
-                            {form.formState.errors.description && <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>}
+                            {addForm.formState.errors.description && <p className="text-sm text-destructive">{addForm.formState.errors.description.message}</p>}
                         </div>
                         <div className="flex items-center space-x-2">
                             <Controller
-                                control={form.control}
+                                control={addForm.control}
                                 name="isAvailable"
                                 render={({ field }) => (
                                     <Switch
@@ -237,8 +332,14 @@ export default function ProductsPage() {
                     {product.isAvailable ? 'Available' : 'Unavailable'}
                   </Badge>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" disabled>Edit</Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" disabled>Delete</Button>
+                    <Button variant="ghost" size="icon" onClick={() => setProductToEdit(product)}>
+                      <FileEdit className="h-4 w-4" />
+                      <span className="sr-only">Edit {product.name}</span>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setProductToDelete(product)}>
+                       <Trash2 className="h-4 w-4" />
+                       <span className="sr-only">Delete {product.name}</span>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -251,6 +352,76 @@ export default function ProductsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Product Dialog */}
+      <Dialog open={!!productToEdit} onOpenChange={(open) => !open && setProductToEdit(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Edit Product</DialogTitle>
+                <DialogDescription>
+                    Update the details for your product. Click "Save changes" when you're done.
+                </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                    <Label htmlFor="edit-name">Product Name</Label>
+                    <Input id="edit-name" {...editForm.register('name')} />
+                    {editForm.formState.errors.name && <p className="text-sm text-destructive">{editForm.formState.errors.name.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="edit-description">Product Description</Label>
+                    <Textarea id="edit-description" {...editForm.register('description')} rows={5} />
+                    <Button type="button" variant="outline" size="sm" onClick={() => handleGenerateDescription(editForm)} disabled={isGenerating}>
+                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Generate with AI
+                    </Button>
+                    {editForm.formState.errors.description && <p className="text-sm text-destructive">{editForm.formState.errors.description.message}</p>}
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Controller
+                        control={editForm.control}
+                        name="isAvailable"
+                        render={({ field }) => (
+                            <Switch
+                            id="edit-isAvailable"
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            />
+                        )}
+                    />
+                    <Label htmlFor="edit-isAvailable">Available for sale</Label>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setProductToEdit(null)}>Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Save changes
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the product
+              "{productToDelete?.name}" from your shop.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProductToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
