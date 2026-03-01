@@ -3,10 +3,10 @@
 // and copy the config object here.
 // https://firebase.google.com/docs/web/setup#add-sdk-and-initialize
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBlAPB0ew_EGLbJCM0nqrbUy-vmRspEZP8",
+  authDomain: "studio-1122720629-5b262.firebaseapp.com",
+  projectId: "studio-1122720629-5b262",
+  storageBucket: "studio-1122720629-5b262.appspot.com",
+  messagingSenderId: "930950296441",
+  appId: "1:930950296441:web:e2e8b208679960c32ab5a8"
 };
