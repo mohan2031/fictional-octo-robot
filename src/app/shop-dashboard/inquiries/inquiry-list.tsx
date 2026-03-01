@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Loader2 } from 'lucide-react';
+import { AiShopInquiryResponse } from '@/components/ai-shop-inquiry-response';
 
 // A type guard to check if a value is a Timestamp
 function isTimestamp(value: any): value is Timestamp {
@@ -112,6 +113,9 @@ export function InquiryList() {
                        <div className="prose prose-sm max-w-none text-muted-foreground space-y-4">
                             <p><strong>From:</strong> {inquiry.name} ({inquiry.contact})</p>
                             <p>{inquiry.message}</p>
+                            <div className="not-prose">
+                                <AiShopInquiryResponse inquiry={inquiry} />
+                            </div>
                        </div>
                     </AccordionContent>
                 </AccordionItem>
