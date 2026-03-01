@@ -53,6 +53,8 @@ export default function SignupPage() {
         imageHint: 'shop front',
         isOpen: true,
         location: 'Your town',
+        lat: 20.5937,
+        lng: 78.9629,
         phone: '1234567890',
         products: [],
         createdAt: serverTimestamp(),

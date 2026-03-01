@@ -10,6 +10,8 @@ const mapDocToShop = (document: DocumentData): Shop => {
       category: data.category || 'Groceries',
       isOpen: data.isOpen === true,
       location: data.location || 'No location',
+      lat: data.lat || 0,
+      lng: data.lng || 0,
       phone: data.phone || 'No phone',
       hours: data.hours || 'Not specified',
       description: data.description || 'No description provided.',

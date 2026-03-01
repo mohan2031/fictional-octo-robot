@@ -13,6 +13,8 @@ export interface Shop {
   category: 'Groceries' | 'Electronics' | 'Plumbing' | 'Electrician' | 'Hardware' | 'Clothing';
   isOpen: boolean;
   location: string;
+  lat: number;
+  lng: number;
   phone: string;
   hours: string;
   description: string;

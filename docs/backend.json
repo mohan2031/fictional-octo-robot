@@ -43,6 +43,8 @@
             "ownerId": { "type": "string", "description": "The UID of the user who owns this shop." },
             "description": { "type": "string" },
             "location": { "type": "string" },
+            "lat": { "type": "number", "description": "The latitude of the shop's location." },
+            "lng": { "type": "number", "description": "The longitude of the shop's location." },
             "phone": { "type": "string" },
             "hours": { "type": "string" },
             "isOpen": { "type": "boolean" },

@@ -6,10 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { ShopCard } from '@/components/shop-card';
+import dynamic from 'next/dynamic';
 
 interface ShopSearchProps {
   shops: Shop[];
 }
+
+const ShopMap = dynamic(() => import('@/components/shop-map').then(mod => mod.ShopMap), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-muted flex items-center justify-center"><p>Loading map...</p></div>
+});
+
 
 export function ShopSearch({ shops }: ShopSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,19 +70,26 @@ export function ShopSearch({ shops }: ShopSearchProps) {
           </Select>
         </div>
       </div>
-
-      {filteredShops.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredShops.map((shop: Shop) => (
-            <ShopCard key={shop.id} shop={shop} />
-          ))}
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="lg:h-[70vh] rounded-lg overflow-hidden border">
+           <ShopMap shops={filteredShops} />
         </div>
-      ) : (
-        <div className="text-center py-16">
-            <h2 className="text-2xl font-semibold">No shops found</h2>
-            <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria.</p>
+        <div className="lg:h-[70vh] overflow-y-auto pr-4 -mr-4">
+          {filteredShops.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+              {filteredShops.map((shop: Shop) => (
+                <ShopCard key={shop.id} shop={shop} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 h-full flex flex-col justify-center items-center">
+                <h2 className="text-2xl font-semibold">No shops found</h2>
+                <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria.</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </>
   );
 }
