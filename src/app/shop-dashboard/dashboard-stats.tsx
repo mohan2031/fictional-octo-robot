@@ -1,12 +1,17 @@
+
 "use client";
 
 import { useMemo } from 'react';
 import { collection, query, where } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Shop, ShopInquiry } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Inbox, MessageSquareWarning, Package } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
+import { subDays, format, startOfDay, isSameDay } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) {
     return (
@@ -64,7 +69,16 @@ export function DashboardStats() {
     const inquiryStats = useMemo(() => {
         const totalInquiries = processedInquiries.length;
         const unreadInquiries = processedInquiries.filter(inq => !inq.isRead).length;
-        return { totalInquiries, unreadInquiries };
+
+        const today = startOfDay(new Date());
+        const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
+
+        const chartData = last7Days.map(day => ({
+            date: format(day, 'MMM d'),
+            inquiries: processedInquiries.filter(inq => isSameDay(inq.createdAt, day)).length,
+        }));
+
+        return { totalInquiries, unreadInquiries, chartData };
     }, [processedInquiries]);
 
 
@@ -82,6 +96,14 @@ export function DashboardStats() {
     }
 
     const totalProducts = shop.products?.length || 0;
+    
+    const chartConfig = {
+      inquiries: {
+        label: "Inquiries",
+        color: "hsl(var(--chart-1))",
+      },
+    } satisfies ChartConfig;
+
 
     return (
         <div>
@@ -90,6 +112,32 @@ export function DashboardStats() {
                 <StatCard title="Total Messages" value={inquiryStats.totalInquiries} icon={Inbox} />
                 <StatCard title="Unread Messages" value={inquiryStats.unreadInquiries} icon={MessageSquareWarning} />
             </div>
+
+             <Card className="mt-8">
+                <CardHeader>
+                    <CardTitle>Recent Messages</CardTitle>
+                    <CardDescription>Messages received over the last 7 days.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                        <BarChart accessibilityLayer data={inquiryStats.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis
+                                dataKey="date"
+                                tickLine={false}
+                                tickMargin={10}
+                                axisLine={false}
+                            />
+                            <YAxis allowDecimals={false} />
+                            <ChartTooltip
+                                cursor={false}
+                                content={<ChartTooltipContent />}
+                            />
+                            <Bar dataKey="inquiries" fill="var(--color-inquiries)" radius={8} />
+                        </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
 
             <Card className="mt-8">
                 <CardHeader>
