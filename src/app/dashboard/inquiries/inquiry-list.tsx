@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo } from 'react';
-import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, Timestamp, doc, updateDoc } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Inquiry } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { AiInquiryResponse } from '@/components/ai-inquiry-response';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 // A type guard to check if a value is a Timestamp
 function isTimestamp(value: any): value is Timestamp {
@@ -42,6 +44,39 @@ export function InquiryList() {
 
     const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
 
+    const processedInquiries = useMemo(() => {
+        if (!inquiries) return [];
+        return inquiries.map(inquiry => {
+            const inquiryData = inquiry as any;
+            return {
+                ...inquiryData,
+                createdAt: isTimestamp(inquiryData.createdAt) 
+                    ? inquiryData.createdAt.toDate()
+                    : new Date(),
+            } as Inquiry;
+        }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }, [inquiries]);
+
+    const handleInquiryOpen = (inquiryId: string) => {
+        if (!firestore || !inquiryId) return;
+
+        const inquiry = processedInquiries.find(i => i.id === inquiryId);
+        // Only update if it's currently unread to avoid unnecessary writes
+        if (inquiry && !inquiry.isRead) {
+            const inquiryRef = doc(firestore, 'inquiries', inquiryId);
+            updateDoc(inquiryRef, { isRead: true })
+                .catch(() => {
+                    const permissionError = new FirestorePermissionError({
+                        path: inquiryRef.path,
+                        operation: 'update',
+                        requestResourceData: { isRead: true },
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
+        }
+    };
+
+
     if (shopsLoading || inquiriesLoading) {
         return <p>Loading inquiries...</p>;
     }
@@ -54,19 +89,9 @@ export function InquiryList() {
         return <p>You have no inquiries yet.</p>;
     }
     
-    const processedInquiries = inquiries.map(inquiry => {
-        const inquiryData = inquiry as any;
-        return {
-            ...inquiryData,
-            createdAt: isTimestamp(inquiryData.createdAt) 
-                ? inquiryData.createdAt.toDate()
-                : new Date(),
-        } as Inquiry;
-    }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-
 
     return (
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion type="single" collapsible className="w-full" onValueChange={handleInquiryOpen}>
             {processedInquiries.map((inquiry) => (
                 <AccordionItem value={inquiry.id} key={inquiry.id}>
                     <AccordionTrigger>
