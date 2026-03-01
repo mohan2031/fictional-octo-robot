@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, Briefcase, ChevronDown } from 'lucide-react';
+import { LogOut, Briefcase, ChevronDown, User as UserIcon } from 'lucide-react';
 import { useUser, useAuth, useFirestore, useCollection } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { collection, query, where } from 'firebase/firestore';
@@ -62,6 +62,7 @@ export function AppHeader() {
   const hasShop = ownedShops && ownedShops.length > 0;
   
   const isLoading = userLoading || clinicsLoading || shopsLoading;
+  const isBusinessOwner = hasClinic || hasShop;
 
   return (
     <header className="bg-card border-b sticky top-0 z-40">
@@ -69,7 +70,7 @@ export function AppHeader() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold font-headline text-primary">
             <Briefcase className="h-6 w-6" />
-            <span>{isClient ? 'RuralReach' : 'LocalLink'}</span>
+            <span>{isClient ? 'RuralReach' : 'RuralReach'}</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>
@@ -89,15 +90,26 @@ export function AppHeader() {
             {!isLoading && (
               user ? (
                 <>
-                  {hasClinic && (
-                    <Button asChild>
-                      <Link href="/dashboard">Clinic Dashboard</Link>
-                    </Button>
-                  )}
-                  {hasShop && (
-                    <Button asChild>
-                      <Link href="/shop-dashboard">Shop Dashboard</Link>
-                    </Button>
+                  {isBusinessOwner ? (
+                    <>
+                      {hasClinic && (
+                        <Button asChild>
+                          <Link href="/dashboard">Clinic Dashboard</Link>
+                        </Button>
+                      )}
+                      {hasShop && (
+                        <Button asChild>
+                          <Link href="/shop-dashboard">Shop Dashboard</Link>
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                     <Button asChild variant="outline">
+                        <Link href="/my-account">
+                          <UserIcon className="mr-2 h-4 w-4" />
+                          My Account
+                        </Link>
+                     </Button>
                   )}
                   <Button variant="outline" size="icon" onClick={handleSignOut} title="Sign Out">
                     <LogOut className="h-4 w-4" />
