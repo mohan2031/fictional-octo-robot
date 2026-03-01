@@ -1,3 +1,82 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "shop-1",
+      "description": "Exterior of a friendly village grocery store.",
+      "imageUrl": "https://images.unsplash.com/photo-1542472683-5852a7b47cc7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx2aWxsYWdlJTIwc3RvcmV8ZW58MHx8fHwxNzcyMzgxNDA2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "village store"
+    },
+    {
+      "id": "shop-2",
+      "description": "A well-organized electronics repair shop.",
+      "imageUrl": "https://images.unsplash.com/photo-1727377255383-fb304fb08262?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxlbGVjdHJvbmljcyUyMHJlcGFpcnxlbnwwfHx8fDE3NzIzODE0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "electronics repair"
+    },
+    {
+      "id": "shop-3",
+      "description": "A van for a plumbing service with company logo.",
+      "imageUrl": "https://images.unsplash.com/photo-1536607278842-2e762f290252?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwbHVtYmluZyUyMHZhbnxlbnwwfHx8fDE3NzIzODE0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "plumbing van"
+    },
+    {
+      "id": "shop-4",
+      "description": "An electrician working on a circuit board.",
+      "imageUrl": "https://images.unsplash.com/photo-1667922578520-61558e79aa7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxlbGVjdHJpY2lhbiUyMHdvcmt8ZW58MHx8fHwxNzcyMzU2MjcwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "electrician work"
+    },
+    {
+      "id": "product-1",
+      "description": "Fresh organic vegetables in a basket.",
+      "imageUrl": "https://images.unsplash.com/photo-1610348725531-843dff563e2c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmcmVzaCUyMHZlZ2V0YWJsZXN8ZW58MHx8fHwxNzcyMzU2MzU2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fresh vegetables"
+    },
+    {
+      "id": "product-2",
+      "description": "A modern smartphone on display.",
+      "imageUrl": "https://images.unsplash.com/photo-1636529174395-0fe6d7484f9b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzbWFydHBob25lJTIwZGlzcGxheXxlbnwwfHx8fDE3NzIzODE0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smartphone display"
+    },
+    {
+      "id": "product-3",
+      "description": "A set of plumbing pipes and fittings.",
+      "imageUrl": "https://images.unsplash.com/photo-1611236544238-2d272eff2cd6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwbHVtYmluZyUyMHBpcGVzfGVufDB8fHx8MTc3MjI4MzkyM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "plumbing pipes"
+    },
+    {
+      "id": "product-4",
+      "description": "A coil of electrical wire.",
+      "imageUrl": "https://images.unsplash.com/photo-1629713850845-8bd09bfb648f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxlbGVjdHJpY2FsJTIwd2lyZXxlbnwwfHx8fDE3NzIzODE0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "electrical wire"
+    },
+    {
+      "id": "atta",
+      "description": "A bag of whole wheat flour.",
+      "imageUrl": "https://images.unsplash.com/photo-1758874960647-f7c2b61e07fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmbG91ciUyMGJhZ3xlbnwwfHx8fDE3NzIzNTkyMTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "flour bag"
+    },
+    {
+      "id": "mobilerepair",
+      "description": "A smartphone with a cracked screen being repaired.",
+      "imageUrl": "https://images.unsplash.com/photo-1576613109753-27804de2cba8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwaG9uZSUyMHJlcGFpcnxlbnwwfHx8fDE3NzIzODE0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "phone repair"
+    },
+    {
+      "id": "tv",
+      "description": "A modern flat screen television.",
+      "imageUrl": "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0ZWxldmlzaW9ufGVufDB8fHx8MTc3MjM4MTQwNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "television"
+    },
+    {
+      "id": "leak",
+      "description": "Water leaking from a pipe under a sink.",
+      "imageUrl": "https://images.unsplash.com/photo-1495774539583-885e02cca8c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3YXRlciUyMGxlYWt8ZW58MHx8fHwxNzcyMzgxNDA2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "water leak"
+    },
+    {
+      "id": "wiring",
+      "description": "Exposed electrical wiring in a wall during construction.",
+      "imageUrl": "https://images.unsplash.com/photo-1722532829003-9c0f3ebfeec3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxob3VzZSUyMHdpcmluZ3xlbnwwfHx8fDE3NzIzMjEwNzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "house wiring"
+    }
+  ]
 }
