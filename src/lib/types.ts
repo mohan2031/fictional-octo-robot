@@ -19,6 +19,8 @@ export interface Shop {
   products: Product[];
   imageUrl: string;
   imageHint: string;
+  ownerId: string;
+  createdAt?: any;
 }
 
 export interface Inquiry {

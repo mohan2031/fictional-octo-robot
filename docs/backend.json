@@ -40,8 +40,36 @@
         "properties": {
             "name": { "type": "string" },
             "category": { "type": "string" },
-            "ownerId": { "type": "string", "description": "The UID of the user who owns this shop." }
+            "ownerId": { "type": "string", "description": "The UID of the user who owns this shop." },
+            "description": { "type": "string" },
+            "location": { "type": "string" },
+            "phone": { "type": "string" },
+            "hours": { "type": "string" },
+            "isOpen": { "type": "boolean" },
+            "imageUrl": { "type": "string", "format": "uri" },
+            "imageHint": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "products": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/backend/entities/product"
+                }
+            }
         }
+    },
+    "product": {
+        "title": "Product",
+        "description": "A product or service offered by a shop.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "isAvailable": { "type": "boolean" },
+            "imageUrl": { "type": "string", "format": "uri" },
+            "imageHint": { "type": "string" }
+        },
+        "required": ["id", "name", "description", "isAvailable", "imageUrl", "imageHint"]
     }
   },
   "auth": {

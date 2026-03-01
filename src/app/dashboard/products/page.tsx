@@ -1,17 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { PlusCircle, MoreHorizontal, FilePenLine } from "lucide-react";
-import { getShopById } from "@/lib/data";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { PlusCircle } from "lucide-react";
+import { ProductList } from "./product-list";
 
-export default async function ProductsPage() {
-  const shop = await getShopById('1');
-
-  if (!shop) return <div>Shop not found</div>;
-
+export default function ProductsPage() {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -32,42 +25,7 @@ export default async function ProductsPage() {
           <CardDescription>A list of all products and services you offer.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {shop.products.map(product => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>
-                    <Badge variant={product.isAvailable ? "secondary" : "outline"}>
-                      {product.isAvailable ? "Available" : "Out of stock"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem>
-                          <FilePenLine className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <ProductList />
         </CardContent>
       </Card>
     </div>
