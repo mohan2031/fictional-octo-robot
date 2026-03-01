@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +52,27 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
+
+      await updateProfile(user, { displayName: data.clinicName });
+
+      const userProfileRef = doc(firestore, 'users', user.uid);
+      const userProfileData = {
+          displayName: data.clinicName,
+          email: user.email,
+          role: 'owner',
+          createdAt: serverTimestamp()
+      };
+      setDoc(userProfileRef, userProfileData).catch((error) => {
+          console.error("Error creating user profile:", error);
+          const permissionError = new FirestorePermissionError({
+              path: userProfileRef.path,
+              operation: 'create',
+              requestResourceData: userProfileData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          // We don't re-throw here as the primary account creation succeeded.
+      });
+
 
       const clinicsRef = collection(firestore, 'clinics');
       const clinicData = {

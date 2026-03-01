@@ -72,3 +72,11 @@ export interface ShopInquiry {
   createdAt: Date;
   isRead: boolean;
 }
+
+export interface UserProfile {
+  id: string; // Corresponds to Firebase Auth UID
+  displayName: string;
+  email: string;
+  role: 'customer' | 'owner';
+  createdAt: Date;
+}

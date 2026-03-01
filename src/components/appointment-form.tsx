@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -43,6 +43,13 @@ export function AppointmentForm({ clinicId }: { clinicId: string }) {
       reason: "",
     },
   });
+
+  useEffect(() => {
+    if (user?.displayName) {
+        form.setValue('patientName', user.displayName);
+    }
+  }, [user, form]);
+
 
   async function onSubmit(values: AppointmentFormData) {
     if (!user) {

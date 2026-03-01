@@ -38,8 +38,8 @@ export default function LoginPage() {
         title: "Success",
         description: "Logged in successfully.",
       });
-      // Redirect to a generic dashboard, the header will handle the correct final destination
-      router.push('/dashboard'); 
+      // Redirect to a generic dashboard/account page, the header will handle the correct final destination
+      router.push('/my-account'); 
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -55,14 +55,14 @@ export default function LoginPage() {
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Business Owner Login</CardTitle>
-          <CardDescription>Access your dashboard to manage your clinic or shop.</CardDescription>
+          <CardTitle className="text-2xl">Login to Your Account</CardTitle>
+          <CardDescription>Access your account or business dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="manager@example.com" {...register('email')} />
+              <Input id="email" type="email" placeholder="you@example.com" {...register('email')} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">

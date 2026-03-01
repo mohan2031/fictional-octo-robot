@@ -118,6 +118,33 @@
         "isRead": { "type": "boolean" }
       },
       "required": ["shopId", "name", "contact", "message", "createdAt"]
+    },
+    "userProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role in the application.",
+          "enum": ["customer", "owner"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user profile was created."
+        }
+      },
+      "required": ["displayName", "email", "role", "createdAt"]
     }
   },
   "auth": {
@@ -149,6 +176,12 @@
     "/shop-inquiries/{inquiryId}": {
         "schema": { "$ref": "#/backend/entities/shopInquiry" },
         "description": "Stores customer inquiries for shops."
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/backend/entities/userProfile"
+      },
+      "description": "Stores user profile information, linked to Firebase Auth UID."
     }
   }
 }

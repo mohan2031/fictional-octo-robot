@@ -43,5 +43,10 @@ service cloud.firestore {
       // Only the shop owner can read or update their inquiries
       allow read, update: if request.auth.uid != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
     }
+
+    match /users/{userId} {
+      // A user can create their own profile, and can only read/write their own data.
+      allow create, read, update: if request.auth.uid == userId;
+    }
   }
 }
