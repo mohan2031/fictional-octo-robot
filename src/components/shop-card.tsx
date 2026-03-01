@@ -3,11 +3,11 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, MapPin } from 'lucide-react';
 import type { Shop } from '@/lib/types';
 
 interface ShopCardProps {
-  shop: Shop;
+  shop: Shop & { distance: number | null };
 }
 
 export function ShopCard({ shop }: ShopCardProps) {
@@ -33,6 +33,12 @@ export function ShopCard({ shop }: ShopCardProps) {
         </div>
         <p className="text-sm text-muted-foreground">{shop.category}</p>
         <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{shop.description}</p>
+        {shop.distance !== null && (
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-primary mt-2">
+            <MapPin className="h-4 w-4" />
+            <span>{shop.distance.toFixed(1)} km away</span>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="p-4 bg-secondary/30">
         <Button asChild className="w-full">
