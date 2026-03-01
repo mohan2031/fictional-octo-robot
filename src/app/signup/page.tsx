@@ -10,17 +10,24 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import type { Shop } from '@/lib/types';
+
+
+const shopCategories: [Shop['category'], ...Shop['category'][]] = ['Groceries', 'Electronics', 'Plumbing', 'Electrician', 'Hardware', 'Clothing', 'Other'];
 
 const signupSchema = z.object({
   shopName: z.string().min(2, { message: "Shop name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  category: z.enum(shopCategories, { required_error: "Please select a category." }),
+  location: z.string().min(3, { message: "Location must be at least 3 characters." }),
 });
 
 type SignupFormData = z.infer<typeof signupSchema>;
@@ -31,8 +38,13 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<SignupFormData>({
+  const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
+    defaultValues: {
+        shopName: '',
+        email: '',
+        location: "",
+    }
   });
 
   const onSubmit = async (data: SignupFormData) => {
@@ -46,13 +58,13 @@ export default function SignupPage() {
       const shopData = {
         name: data.shopName,
         ownerId: user.uid,
-        category: 'Groceries', // Default category
-        description: 'Welcome to our new shop!',
+        category: data.category,
+        description: `Welcome to ${data.shopName}!`,
         hours: '9 AM - 5 PM',
         imageUrl: 'https://picsum.photos/seed/newshop/600/400',
         imageHint: 'shop front',
         isOpen: true,
-        location: 'Your town',
+        location: data.location,
         lat: 20.5937,
         lng: 78.9629,
         phone: '1234567890',
@@ -95,26 +107,88 @@ export default function SignupPage() {
           <CardDescription>Get started with managing your shop online.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-             <div className="space-y-2">
-              <Label htmlFor="shopName">Shop Name</Label>
-              <Input id="shopName" placeholder="My Awesome Shop" {...register('shopName')} />
-              {errors.shopName && <p className="text-sm text-destructive">{errors.shopName.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="owner@example.com" {...register('email')} />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" {...register('password')} />
-              {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-            </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating Account...' : 'Sign Up & Create Shop'}
-            </Button>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="shopName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Shop Name</FormLabel>
+                            <FormControl>
+                                <Input placeholder="My Awesome Shop" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Shop Category</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {shopCategories.map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Your Town/Village</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., Springfield" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Login Email</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="owner@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                                <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating Account...' : 'Sign Up & Create Shop'}
+                </Button>
+            </form>
+          </Form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link href="/login" className="underline">

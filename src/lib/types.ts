@@ -10,7 +10,7 @@ export interface Product {
 export interface Shop {
   id: string;
   name:string;
-  category: 'Groceries' | 'Electronics' | 'Plumbing' | 'Electrician' | 'Hardware' | 'Clothing';
+  category: 'Groceries' | 'Electronics' | 'Plumbing' | 'Electrician' | 'Hardware' | 'Clothing' | 'Other';
   isOpen: boolean;
   location: string;
   lat: number;
