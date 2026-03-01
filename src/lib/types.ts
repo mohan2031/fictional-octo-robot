@@ -20,7 +20,7 @@ export interface Shop {
   imageUrl: string;
   imageHint: string;
   ownerId: string;
-  createdAt?: any;
+  createdAt?: Date;
 }
 
 export interface Inquiry {
