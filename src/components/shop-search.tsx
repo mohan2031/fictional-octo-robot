@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import type { Shop } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, LocateFixed } from 'lucide-react';
+import { Search, LocateFixed, Dices } from 'lucide-react';
 import { ShopCard } from '@/components/shop-card';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -80,6 +80,19 @@ export function ShopSearch({ shops }: ShopSearchProps) {
     }
   };
 
+  const handleRandomVillage = () => {
+    if (shops.length === 0) return;
+
+    const locations = [...new Set(shops.map(s => s.location))].filter(Boolean);
+    if (locations.length === 0) {
+        toast({ variant: "destructive", title: "No Locations", description: "No shops have a location set." });
+        return;
+    }
+    const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+    setSearchTerm(randomLocation);
+    toast({ title: `Welcome to ${randomLocation}!`, description: "Showing shops from a random village." });
+  };
+
   let processedShops = shops.map(shop => {
       const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, shop.lat, shop.lng) : null;
       return { ...shop, distance };
@@ -89,7 +102,8 @@ export function ShopSearch({ shops }: ShopSearchProps) {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     const matchesSearch =
       shop.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-      shop.description.toLowerCase().includes(lowerCaseSearchTerm);
+      shop.description.toLowerCase().includes(lowerCaseSearchTerm) ||
+      shop.location.toLowerCase().includes(lowerCaseSearchTerm);
     
     const matchesCategory =
       category === 'All' || shop.category === category;
@@ -109,11 +123,11 @@ export function ShopSearch({ shops }: ShopSearchProps) {
   return (
     <>
       <div className="mb-8 p-4 bg-card rounded-lg shadow-sm border">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <div className="md:col-span-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Search for shops or services..."
+              placeholder="Search by name, service, or village..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -137,9 +151,14 @@ export function ShopSearch({ shops }: ShopSearchProps) {
                     <LocateFixed className={`mr-2 h-4 w-4 ${isLocating ? 'animate-pulse' : ''}`} />
                     {isLocating ? 'Locating...' : 'Find Nearby'}
                 </Button>
+                 <Button onClick={handleRandomVillage} variant="outline">
+                    <Dices className="mr-2 h-4 w-4" />
+                    Random Village
+                </Button>
             </>
           ) : (
             <>
+                <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
             </>

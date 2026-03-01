@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import type { Clinic } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, LocateFixed } from 'lucide-react';
+import { Search, LocateFixed, Dices } from 'lucide-react';
 import { ClinicCard } from '@/components/clinic-card';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -80,6 +80,19 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
     }
   };
 
+  const handleRandomVillage = () => {
+    if (clinics.length === 0) return;
+
+    const locations = [...new Set(clinics.map(c => c.location))].filter(Boolean);
+    if (locations.length === 0) {
+        toast({ variant: "destructive", title: "No Locations", description: "No clinics have a location set." });
+        return;
+    }
+    const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+    setSearchTerm(randomLocation);
+    toast({ title: `Welcome to ${randomLocation}!`, description: "Showing clinics from a random village." });
+  };
+
   let processedClinics = clinics.map(clinic => {
       const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, clinic.lat, clinic.lng) : null;
       return { ...clinic, distance };
@@ -89,7 +102,8 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     const matchesSearch =
       clinic.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-      clinic.description.toLowerCase().includes(lowerCaseSearchTerm);
+      clinic.description.toLowerCase().includes(lowerCaseSearchTerm) ||
+      clinic.location.toLowerCase().includes(lowerCaseSearchTerm);
     
     const matchesCategory =
       category === 'All' || clinic.category === category;
@@ -110,11 +124,11 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
   return (
     <>
       <div className="mb-8 p-4 bg-card rounded-lg shadow-sm border">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <div className="md:col-span-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Search for clinics or services..."
+              placeholder="Search by name, service, or village..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -138,9 +152,14 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
                     <LocateFixed className={`mr-2 h-4 w-4 ${isLocating ? 'animate-pulse' : ''}`} />
                     {isLocating ? 'Locating...' : 'Find Nearby'}
                 </Button>
+                <Button onClick={handleRandomVillage} variant="outline">
+                    <Dices className="mr-2 h-4 w-4" />
+                    Random Village
+                </Button>
             </>
           ) : (
             <>
+                <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
             </>
