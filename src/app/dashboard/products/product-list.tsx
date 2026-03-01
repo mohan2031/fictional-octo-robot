@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, FilePenLine } from "lucide-react";
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export function ProductList() {
     const firestore = useFirestore();
@@ -71,9 +72,11 @@ export function ProductList() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem>
-                          <FilePenLine className="mr-2 h-4 w-4" />
-                          Edit
+                        <DropdownMenuItem asChild>
+                           <Link href={`/dashboard/products/edit/${product.id}`}>
+                                <FilePenLine className="mr-2 h-4 w-4" />
+                                Edit
+                           </Link>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
