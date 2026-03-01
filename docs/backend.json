@@ -2,12 +2,12 @@
   "entities": {
     "inquiry": {
       "title": "Inquiry",
-      "description": "A customer inquiry sent to a shop owner.",
+      "description": "A patient inquiry sent to a clinic owner.",
       "type": "object",
       "properties": {
-        "shopId": {
+        "clinicId": {
           "type": "string",
-          "description": "The ID of the shop the inquiry is for."
+          "description": "The ID of the clinic the inquiry is for."
         },
         "name": {
           "type": "string",
@@ -28,50 +28,45 @@
         },
         "isRead": {
             "type": "boolean",
-            "description": "Whether the shop owner has read the inquiry."
+            "description": "Whether the clinic owner has read the inquiry."
         }
       },
-      "required": ["shopId", "name", "contact", "message", "createdAt"]
+      "required": ["clinicId", "name", "contact", "message", "createdAt"]
     },
-    "shop": {
-        "title": "Shop",
-        "description": "Represents a local shop or service provider.",
+    "clinic": {
+        "title": "Clinic",
+        "description": "Represents a local clinic or healthcare provider.",
         "type": "object",
         "properties": {
             "name": { "type": "string" },
             "category": { "type": "string" },
-            "ownerId": { "type": "string", "description": "The UID of the user who owns this shop." },
+            "ownerId": { "type": "string", "description": "The UID of the user who owns this clinic." },
             "description": { "type": "string" },
             "location": { "type": "string" },
-            "lat": { "type": "number", "description": "The latitude of the shop's location." },
-            "lng": { "type": "number", "description": "The longitude of the shop's location." },
+            "lat": { "type": "number", "description": "The latitude of the clinic's location." },
+            "lng": { "type": "number", "description": "The longitude of the clinic's location." },
             "phone": { "type": "string" },
             "hours": { "type": "string" },
             "isOpen": { "type": "boolean" },
             "imageUrl": { "type": "string", "format": "uri" },
             "imageHint": { "type": "string" },
-            "createdAt": { "type": "string", "format": "date-time" },
-            "products": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/backend/entities/product"
-                }
-            }
+            "createdAt": { "type": "string", "format": "date-time" }
         }
     },
-    "product": {
-        "title": "Product",
-        "description": "A product or service offered by a shop.",
+    "appointment": {
+        "title": "Appointment",
+        "description": "A scheduled appointment at a clinic.",
         "type": "object",
         "properties": {
-            "id": { "type": "string" },
-            "name": { "type": "string" },
-            "description": { "type": "string" },
-            "isAvailable": { "type": "boolean" },
-            "imageUrl": { "type": "string", "format": "uri" },
-            "imageHint": { "type": "string" }
+            "clinicId": { "type": "string" },
+            "userId": { "type": "string", "description": "The UID of the user who booked the appointment."},
+            "patientName": { "type": "string" },
+            "appointmentDate": { "type": "string", "format": "date-time" },
+            "reason": { "type": "string" },
+            "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled"] },
+            "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["id", "name", "description", "isAvailable", "imageUrl", "imageHint"]
+        "required": ["clinicId", "userId", "patientName", "appointmentDate", "reason", "status", "createdAt"]
     }
   },
   "auth": {
@@ -82,13 +77,19 @@
       "schema": {
         "$ref": "#/backend/entities/inquiry"
       },
-      "description": "Stores customer inquiries for shops."
+      "description": "Stores patient inquiries for clinics."
     },
-    "/shops/{shopId}": {
+    "/clinics/{clinicId}": {
         "schema": {
-            "$ref": "#/backend/entities/shop"
+            "$ref": "#/backend/entities/clinic"
         },
-        "description": "Stores information about each shop."
+        "description": "Stores information about each clinic."
+    },
+    "/appointments/{appointmentId}": {
+        "schema": {
+            "$ref": "#/backend/entities/appointment"
+        },
+        "description": "Stores patient appointments for clinics."
     }
   }
 }

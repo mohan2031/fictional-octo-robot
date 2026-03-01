@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'RuralReach - Connecting Villages',
-  description: 'Find local shops, check availability, and connect with businesses in your village.',
+  title: 'HealthConnect - Find Local Clinics',
+  description: 'Find local clinics, check availability, and book appointments in your area.',
 };
 
 export default function RootLayout({

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useFormState } from "react-dom";
@@ -50,7 +49,7 @@ export function AiInquiryResponse({ inquiry }: AiInquiryResponseProps) {
     const formData = new FormData();
     formData.append("customerName", inquiry.name);
     formData.append("customerMessage", inquiry.message);
-    formData.append("shopId", inquiry.shopId);
+    formData.append("clinicId", inquiry.clinicId);
     formAction(formData);
   };
   
@@ -74,7 +73,7 @@ export function AiInquiryResponse({ inquiry }: AiInquiryResponseProps) {
         <DialogHeader>
           <DialogTitle>AI Generated Reply</DialogTitle>
           <DialogDescription>
-            Here's a draft response for the inquiry from {inquiry.name}. You can edit it before sending.
+            Here's a draft response for the message from {inquiry.name}. You can edit it before sending.
           </DialogDescription>
         </DialogHeader>
         {isGenerating ? (

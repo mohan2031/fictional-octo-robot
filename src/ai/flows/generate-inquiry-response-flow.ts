@@ -11,17 +11,16 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateInquiryResponseInputSchema = z.object({
-  customerName: z.string().describe("The name of the customer making the inquiry."),
-  customerMessage: z.string().describe("The customer's inquiry message."),
-  shopName: z.string().describe("The name of the shop."),
-  shopProducts: z.array(z.string()).describe("A list of products the shop sells."),
+  customerName: z.string().describe("The name of the patient making the inquiry."),
+  customerMessage: z.string().describe("The patient's inquiry message."),
+  clinicName: z.string().describe("The name of the clinic."),
 });
 export type GenerateInquiryResponseInput = z.infer<
   typeof GenerateInquiryResponseInputSchema
 >;
 
 const GenerateInquiryResponseOutputSchema = z.object({
-  response: z.string().describe('The generated response to the customer.'),
+  response: z.string().describe('The generated response to the patient.'),
 });
 export type GenerateInquiryResponseOutput = z.infer<
   typeof GenerateInquiryResponseOutputSchema
@@ -37,20 +36,19 @@ const generateInquiryResponsePrompt = ai.definePrompt({
   name: 'generateInquiryResponsePrompt',
   input: {schema: GenerateInquiryResponseInputSchema},
   output: {schema: GenerateInquiryResponseOutputSchema},
-  prompt: `You are a helpful assistant for a busy shop owner. Your task is to draft a polite and helpful response to a customer's inquiry.
+  prompt: `You are a helpful assistant for a busy clinic receptionist. Your task is to draft a polite and helpful response to a patient's inquiry.
 
-Shop Name: {{{shopName}}}
-Shop Products: {{#each shopProducts}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+Clinic Name: {{{clinicName}}}
 
-Customer Name: {{{customerName}}}
-Customer's Message:
+Patient Name: {{{customerName}}}
+Patient's Message:
 "{{{customerMessage}}}"
 
-Based on the customer's message and the shop's information, draft a friendly and professional response.
-- If the customer is asking about product availability, check if it's in the product list.
-- If the question is generic, provide a helpful, non-committal response.
-- Keep the tone warm and personal.
-- Address the customer by name.
+Based on the patient's message and the clinic's information, draft a friendly and professional response.
+- If the patient is asking about appointments, guide them to use the appointment booking feature.
+- If the patient is asking about services, provide a general and helpful response.
+- Keep the tone warm and professional.
+- Address the patient by name.
 
 Generate only the response text.
 `,

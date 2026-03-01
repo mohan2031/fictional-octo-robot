@@ -5,13 +5,13 @@ export default function InquiriesPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h2 className="text-3xl font-bold font-headline">Customer Inquiries</h2>
-                <p className="text-muted-foreground">Messages from customers about your products and services.</p>
+                <h2 className="text-3xl font-bold font-headline">Patient Messages</h2>
+                <p className="text-muted-foreground">Messages and questions from patients.</p>
             </div>
             <Card>
                 <CardHeader>
                     <CardTitle>Inbox</CardTitle>
-                    <CardDescription>Here are the latest inquiries for your shop.</CardDescription>
+                    <CardDescription>Here are the latest messages for your clinic.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <InquiryList />

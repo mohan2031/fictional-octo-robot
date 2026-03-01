@@ -54,14 +54,14 @@ export default function LoginPage() {
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Shop Owner Login</CardTitle>
-          <CardDescription>Access your dashboard to manage your shop.</CardDescription>
+          <CardTitle className="text-2xl">Clinic Manager Login</CardTitle>
+          <CardDescription>Access your dashboard to manage your clinic.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="owner@example.com" {...register('email')} />
+              <Input id="email" type="email" placeholder="manager@example.com" {...register('email')} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">

@@ -23,7 +23,7 @@ const inquirySchema = z.object({
 
 type InquiryFormData = z.infer<typeof inquirySchema>;
 
-export function InquiryForm({ shopId, defaultMessage }: { shopId: string, defaultMessage?: string }) {
+export function InquiryForm({ clinicId, defaultMessage }: { clinicId: string, defaultMessage?: string }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const db = useFirestore();
@@ -41,7 +41,7 @@ export function InquiryForm({ shopId, defaultMessage }: { shopId: string, defaul
     
     const inquiryData = {
         ...values,
-        shopId: shopId,
+        clinicId: clinicId,
         createdAt: serverTimestamp(),
         isRead: false,
     };
@@ -50,14 +50,14 @@ export function InquiryForm({ shopId, defaultMessage }: { shopId: string, defaul
     addDoc(inquiriesRef, inquiryData)
     .then(() => {
         toast({
-            title: "Inquiry Sent!",
-            description: "The shop owner has been notified.",
+            title: "Message Sent!",
+            description: "The clinic has been notified.",
         });
         form.reset();
         // Consider closing the dialog programmatically by lifting state
     })
     .catch((error) => {
-        console.error("Error sending inquiry:", error);
+        console.error("Error sending message:", error);
 
         const permissionError = new FirestorePermissionError({
             path: inquiriesRef.path,
@@ -107,7 +107,7 @@ export function InquiryForm({ shopId, defaultMessage }: { shopId: string, defaul
             <FormItem>
               <FormLabel>Your Message</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., Is the 10kg Bag of Rice in stock?" {...field} />
+                <Textarea placeholder="Type your message here..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

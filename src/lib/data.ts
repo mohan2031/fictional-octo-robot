@@ -1,13 +1,13 @@
-import type { Shop } from './types';
+import type { Clinic } from './types';
 import { db } from '@/firebase/server';
-import { collection, getDocs, doc, getDoc, DocumentData, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, DocumentData, Timestamp } from 'firebase/firestore';
 
-const mapDocToShop = (document: DocumentData): Shop => {
+const mapDocToClinic = (document: DocumentData): Clinic => {
     const data = document.data();
     return {
       id: document.id,
-      name: data.name || 'Unnamed Shop',
-      category: data.category || 'Groceries',
+      name: data.name || 'Unnamed Clinic',
+      category: data.category || 'Other',
       isOpen: data.isOpen === true,
       location: data.location || 'No location',
       lat: data.lat || 0,
@@ -15,32 +15,24 @@ const mapDocToShop = (document: DocumentData): Shop => {
       phone: data.phone || 'No phone',
       hours: data.hours || 'Not specified',
       description: data.description || 'No description provided.',
-      products: data.products || [],
       imageUrl: data.imageUrl || `https://picsum.photos/seed/${document.id}/600/400`,
-      imageHint: data.imageHint || 'shop',
+      imageHint: data.imageHint || 'clinic',
       ownerId: data.ownerId || '',
       // Firestore timestamps need to be converted to JS Dates for serialization in Server Components
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
     };
   };
 
-export const getShops = async (): Promise<Shop[]> => {
-  const shopsCol = collection(db, 'shops');
-  const shopSnapshot = await getDocs(shopsCol);
-  const shops = shopSnapshot.docs.map(mapDocToShop);
-  return shops;
-};
-
-export const getShopById = async (id: string): Promise<Shop | null> => {
+export const getClinicById = async (id: string): Promise<Clinic | null> => {
   if (!id) {
     return null;
   }
-  const shopRef = doc(db, 'shops', id);
-  const shopSnap = await getDoc(shopRef);
+  const clinicRef = doc(db, 'clinics', id);
+  const clinicSnap = await getDoc(clinicRef);
 
-  if (!shopSnap.exists()) {
+  if (!clinicSnap.exists()) {
     return null;
   }
   
-  return mapDocToShop(shopSnap);
+  return mapDocToClinic(clinicSnap);
 };

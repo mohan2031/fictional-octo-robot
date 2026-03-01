@@ -3,9 +3,9 @@
 import { useMemo } from 'react';
 import { collection, query, where } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
-import type { Shop, Inquiry } from '@/lib/types';
+import type { Clinic, Inquiry, Appointment } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Package, Inbox, MessageSquareWarning } from 'lucide-react';
+import { CalendarDays, Inbox, MessageSquareWarning } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { subDays, format, startOfDay, isSameDay } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -31,28 +31,38 @@ export function DashboardStats() {
     const firestore = useFirestore();
     const { user } = useUser();
 
-    const shopsQuery = useMemo(() => {
+    const clinicsQuery = useMemo(() => {
         if (!firestore || !user) return null;
         return query(
-            collection(firestore, "shops"),
+            collection(firestore, "clinics"),
             where("ownerId", "==", user.uid)
         );
     }, [firestore, user]);
 
-    const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
+    const { data: clinics, loading: clinicsLoading } = useCollection(clinicsQuery);
     
-    const shop = shops?.[0] as Shop | undefined;
-    const shopId = shop?.id;
+    const clinic = clinics?.[0] as Clinic | undefined;
+    const clinicId = clinic?.id;
 
     const inquiriesQuery = useMemo(() => {
-        if (!firestore || !shopId) return null;
+        if (!firestore || !clinicId) return null;
         return query(
             collection(firestore, "inquiries"),
-            where("shopId", "==", shopId)
+            where("clinicId", "==", clinicId)
         );
-    }, [firestore, shopId]);
+    }, [firestore, clinicId]);
 
     const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
+
+    const appointmentsQuery = useMemo(() => {
+        if (!firestore || !clinicId) return null;
+        return query(
+            collection(firestore, "appointments"),
+            where("clinicId", "==", clinicId)
+        );
+    }, [firestore, clinicId]);
+
+    const { data: appointments, loading: appointmentsLoading } = useCollection(appointmentsQuery);
 
     const processedInquiries = useMemo(() => {
         if (!inquiries) return [];
@@ -81,7 +91,7 @@ export function DashboardStats() {
     }, [processedInquiries]);
 
 
-    if (shopsLoading || inquiriesLoading) {
+    if (clinicsLoading || inquiriesLoading || appointmentsLoading) {
         return (
             <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -90,11 +100,11 @@ export function DashboardStats() {
         );
     }
     
-    if (!shop) {
-        return <p className="text-center text-muted-foreground py-8">You haven't set up a shop yet. Please sign up to create one.</p>;
+    if (!clinic) {
+        return <p className="text-center text-muted-foreground py-8">You haven't set up a clinic yet. Please sign up to create one.</p>;
     }
 
-    const totalProducts = shop.products?.length || 0;
+    const totalAppointments = appointments?.length || 0;
     
     const chartConfig = {
       inquiries: {
@@ -107,15 +117,15 @@ export function DashboardStats() {
     return (
         <div>
             <div className="grid gap-4 md:grid-cols-3">
-                <StatCard title="Total Products" value={totalProducts} icon={Package} />
-                <StatCard title="Total Inquiries" value={inquiryStats.totalInquiries} icon={Inbox} />
-                <StatCard title="Unread Inquiries" value={inquiryStats.unreadInquiries} icon={MessageSquareWarning} />
+                <StatCard title="Total Appointments" value={totalAppointments} icon={CalendarDays} />
+                <StatCard title="Total Messages" value={inquiryStats.totalInquiries} icon={Inbox} />
+                <StatCard title="Unread Messages" value={inquiryStats.unreadInquiries} icon={MessageSquareWarning} />
             </div>
 
             <Card className="mt-8">
                 <CardHeader>
-                    <CardTitle>Recent Inquiries</CardTitle>
-                    <CardDescription>Inquiries received over the last 7 days.</CardDescription>
+                    <CardTitle>Recent Messages</CardTitle>
+                    <CardDescription>Messages received over the last 7 days.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={chartConfig} className="h-[250px] w-full">
@@ -140,20 +150,20 @@ export function DashboardStats() {
 
             <Card className="mt-8">
                 <CardHeader>
-                    <CardTitle>Your Shop Profile</CardTitle>
+                    <CardTitle>Your Clinic Profile</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div>
-                        <h3 className="font-semibold">Shop Name</h3>
-                        <p className="text-muted-foreground">{shop.name}</p>
+                        <h3 className="font-semibold">Clinic Name</h3>
+                        <p className="text-muted-foreground">{clinic.name}</p>
                     </div>
                     <div>
-                        <h3 className="font-semibold">Shop Status</h3>
-                        <p className="text-muted-foreground">Currently <span className="font-bold text-primary">{shop.isOpen ? 'Open' : 'Closed'}</span></p>
+                        <h3 className="font-semibold">Clinic Status</h3>
+                        <p className="text-muted-foreground">Currently <span className="font-bold text-primary">{clinic.isOpen ? 'Open' : 'Closed'}</span></p>
                     </div>
                     <div>
                         <h3 className="font-semibold">Description</h3>
-                        <p className="text-muted-foreground">{shop.description}</p>
+                        <p className="text-muted-foreground">{clinic.description}</p>
                     </div>
                 </CardContent>
             </Card>

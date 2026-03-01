@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import type { Shop } from '@/lib/types';
+import type { Clinic } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useForm } from 'react-hook-form';
@@ -19,8 +19,8 @@ import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 
-const shopSchema = z.object({
-  name: z.string().min(2, "Shop name must be at least 2 characters."),
+const clinicSchema = z.object({
+  name: z.string().min(2, "Clinic name must be at least 2 characters."),
   description: z.string().min(10, "Description must be at least 10 characters."),
   location: z.string().min(3, "Location is required."),
   phone: z.string().min(10, "A valid phone number is required."),
@@ -28,48 +28,48 @@ const shopSchema = z.object({
   isOpen: z.boolean(),
 });
 
-type ShopFormData = z.infer<typeof shopSchema>;
+type ClinicFormData = z.infer<typeof clinicSchema>;
 
 
-interface EditShopFormProps {
-    shop: Shop;
+interface EditClinicFormProps {
+    clinic: Clinic;
 }
 
-export function EditShopForm({ shop }: EditShopFormProps) {
+export function EditClinicForm({ clinic }: EditClinicFormProps) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   
   const router = useRouter();
   const firestore = useFirestore();
 
-  const form = useForm<ShopFormData>({
-    resolver: zodResolver(shopSchema),
+  const form = useForm<ClinicFormData>({
+    resolver: zodResolver(clinicSchema),
     defaultValues: {
-        name: shop.name || '',
-        description: shop.description || '',
-        location: shop.location || '',
-        phone: shop.phone || '',
-        hours: shop.hours || '',
-        isOpen: shop.isOpen || false,
+        name: clinic.name || '',
+        description: clinic.description || '',
+        location: clinic.location || '',
+        phone: clinic.phone || '',
+        hours: clinic.hours || '',
+        isOpen: clinic.isOpen || false,
     },
   });
 
 
-  const handleSaveChanges = async (values: ShopFormData) => {
-    if (!firestore || !shop.id) return;
+  const handleSaveChanges = async (values: ClinicFormData) => {
+    if (!firestore || !clinic.id) return;
     
     setIsSaving(true);
     
     try {
-        const shopRef = doc(firestore, 'shops', shop.id);
+        const clinicRef = doc(firestore, 'clinics', clinic.id);
         
         const updatedData = {
             ...values,
         };
 
-        updateDoc(shopRef, updatedData).catch((error) => {
+        updateDoc(clinicRef, updatedData).catch((error) => {
           const permissionError = new FirestorePermissionError({
-            path: shopRef.path,
+            path: clinicRef.path,
             operation: 'update',
             requestResourceData: values,
           });
@@ -78,16 +78,16 @@ export function EditShopForm({ shop }: EditShopFormProps) {
         });
 
         toast({
-            title: "Shop Updated!",
-            description: "Your shop details have been successfully updated.",
+            title: "Clinic Updated!",
+            description: "Your clinic details have been successfully updated.",
         });
         router.refresh();
 
     } catch (error: any) {
-        console.error("Error saving shop details:", error);
+        console.error("Error saving clinic details:", error);
         if (!(error instanceof FirestorePermissionError)) {
              toast({
-              title: "Error Saving Shop",
+              title: "Error Saving Clinic",
               description: error.message || "An unexpected error occurred.",
               variant: "destructive",
             });
@@ -105,7 +105,7 @@ export function EditShopForm({ shop }: EditShopFormProps) {
                 name="name"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Shop Name</FormLabel>
+                        <FormLabel>Clinic Name</FormLabel>
                         <FormControl>
                             <Input {...field} />
                         </FormControl>
@@ -118,7 +118,7 @@ export function EditShopForm({ shop }: EditShopFormProps) {
                 name="description"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Shop Description</FormLabel>
+                        <FormLabel>Clinic Description</FormLabel>
                         <FormControl>
                             <Textarea {...field} rows={4} />
                         </FormControl>
@@ -171,9 +171,9 @@ export function EditShopForm({ shop }: EditShopFormProps) {
                 render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm bg-background/50">
                         <div className="space-y-0.5">
-                            <FormLabel>Shop Status</FormLabel>
+                            <FormLabel>Clinic Status</FormLabel>
                             <p className="text-sm text-muted-foreground">
-                                Set your shop to open or closed for customers.
+                                Set your clinic to open or closed for patients.
                             </p>
                         </div>
                         <FormControl>

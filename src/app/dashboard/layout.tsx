@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader } from "@/components/ui/sidebar";
-import { Home, Package, Settings, Leaf, Inbox } from "lucide-react";
+import { Home, CalendarDays, Settings, Stethoscope, Inbox } from "lucide-react";
 import Link from 'next/link';
 import { AuthGuard } from './auth-guard';
 
@@ -16,8 +16,8 @@ export default function DashboardLayout({
           <Sidebar>
             <SidebarHeader className="border-b">
               <div className="flex items-center gap-2 text-primary p-2">
-                  <Leaf className="h-6 w-6"/>
-                  <span className="text-lg font-bold font-headline">RuralReach</span>
+                  <Stethoscope className="h-6 w-6"/>
+                  <span className="text-lg font-bold font-headline">HealthConnect</span>
               </div>
             </SidebarHeader>
             <SidebarContent>
@@ -28,13 +28,13 @@ export default function DashboardLayout({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Products">
-                    <Link href="/dashboard/products"><Package /> <span>Products</span></Link>
+                  <SidebarMenuButton asChild tooltip="Appointments">
+                    <Link href="/dashboard/appointments"><CalendarDays /> <span>Appointments</span></Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Inquiries">
-                    <Link href="/dashboard/inquiries"><Inbox /> <span>Inquiries</span></Link>
+                  <SidebarMenuButton asChild tooltip="Messages">
+                    <Link href="/dashboard/inquiries"><Inbox /> <span>Messages</span></Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
@@ -48,7 +48,7 @@ export default function DashboardLayout({
           <main className="flex-1 flex flex-col">
             <header className="p-4 border-b flex items-center gap-4 bg-card/50 sticky top-0 z-30">
               <SidebarTrigger className="md:hidden" />
-              <h1 className="text-xl font-semibold font-headline">Shop Dashboard</h1>
+              <h1 className="text-xl font-semibold font-headline">Clinic Dashboard</h1>
             </header>
             <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-muted/30">
               {children}

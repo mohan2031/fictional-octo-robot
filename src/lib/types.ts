@@ -1,16 +1,18 @@
-export interface Product {
+export interface Appointment {
   id: string;
-  name: string;
-  description: string;
-  isAvailable: boolean;
-  imageUrl: string;
-  imageHint: string;
+  clinicId: string;
+  userId: string;
+  patientName: string;
+  appointmentDate: Date;
+  reason: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  createdAt: Date;
 }
 
-export interface Shop {
+export interface Clinic {
   id: string;
   name:string;
-  category: 'Groceries' | 'Electronics' | 'Plumbing' | 'Electrician' | 'Hardware' | 'Clothing' | 'Other';
+  category: 'Dentist' | 'General Physician' | 'Cardiology' | 'Pediatrics' | 'Dermatology' | 'Other';
   isOpen: boolean;
   location: string;
   lat: number;
@@ -18,7 +20,6 @@ export interface Shop {
   phone: string;
   hours: string;
   description: string;
-  products: Product[];
   imageUrl: string;
   imageHint: string;
   ownerId: string;
@@ -27,7 +28,7 @@ export interface Shop {
 
 export interface Inquiry {
   id: string;
-  shopId: string;
+  clinicId: string;
   name: string;
   contact: string;
   message: string;

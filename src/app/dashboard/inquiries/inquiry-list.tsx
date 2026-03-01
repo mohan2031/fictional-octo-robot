@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo } from 'react';
@@ -21,27 +20,27 @@ export function InquiryList() {
     const firestore = useFirestore();
     const { user } = useUser();
 
-    const shopsQuery = useMemo(() => {
+    const clinicsQuery = useMemo(() => {
         if (!firestore || !user) return null;
         return query(
-            collection(firestore, "shops"),
+            collection(firestore, "clinics"),
             where("ownerId", "==", user.uid)
         );
     }, [firestore, user]);
 
-    const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
+    const { data: clinics, loading: clinicsLoading } = useCollection(clinicsQuery);
     
-    // Assuming one shop per owner for now
-    const shopId = shops?.[0]?.id;
+    // Assuming one clinic per owner for now
+    const clinicId = clinics?.[0]?.id;
 
     const inquiriesQuery = useMemo(() => {
-        if (!firestore || !shopId) return null;
+        if (!firestore || !clinicId) return null;
         return query(
             collection(firestore, "inquiries"),
-            where("shopId", "==", shopId),
+            where("clinicId", "==", clinicId),
             orderBy("createdAt", "desc")
         );
-    }, [firestore, shopId]);
+    }, [firestore, clinicId]);
 
     const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
 
@@ -78,16 +77,16 @@ export function InquiryList() {
     };
 
 
-    if (shopsLoading || inquiriesLoading) {
-        return <p>Loading inquiries...</p>;
+    if (clinicsLoading || inquiriesLoading) {
+        return <p>Loading messages...</p>;
     }
     
-    if (!shops || shops.length === 0) {
-        return <p>You haven't set up a shop yet.</p>;
+    if (!clinics || clinics.length === 0) {
+        return <p>You haven't set up a clinic yet.</p>;
     }
 
     if (!inquiries || inquiries.length === 0) {
-        return <p>You have no inquiries yet.</p>;
+        return <p>You have no messages yet.</p>;
     }
     
 

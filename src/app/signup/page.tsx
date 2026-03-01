@@ -17,16 +17,16 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import type { Shop } from '@/lib/types';
+import type { Clinic } from '@/lib/types';
 
 
-const shopCategories: [Shop['category'], ...Shop['category'][]] = ['Groceries', 'Electronics', 'Plumbing', 'Electrician', 'Hardware', 'Clothing', 'Other'];
+const clinicCategories: [Clinic['category'], ...Clinic['category'][]] = ['Dentist', 'General Physician', 'Cardiology', 'Pediatrics', 'Dermatology', 'Other'];
 
 const signupSchema = z.object({
-  shopName: z.string().min(2, { message: "Shop name must be at least 2 characters." }),
+  clinicName: z.string().min(2, { message: "Clinic name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
-  category: z.enum(shopCategories, { required_error: "Please select a category." }),
+  category: z.enum(clinicCategories, { required_error: "Please select a category." }),
   location: z.string().min(3, { message: "Location must be at least 3 characters." }),
 });
 
@@ -41,7 +41,7 @@ export default function SignupPage() {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-        shopName: '',
+        clinicName: '',
         email: '',
         location: "",
     }
@@ -53,39 +53,37 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      // Create a corresponding shop document in Firestore
-      const shopsRef = collection(firestore, 'shops');
-      const shopData = {
-        name: data.shopName,
+      const clinicsRef = collection(firestore, 'clinics');
+      const clinicData = {
+        name: data.clinicName,
         ownerId: user.uid,
         category: data.category,
-        description: `Welcome to ${data.shopName}!`,
+        description: `Welcome to ${data.clinicName}!`,
         hours: '9 AM - 5 PM',
-        imageUrl: 'https://picsum.photos/seed/newshop/600/400',
-        imageHint: 'shop front',
+        imageUrl: 'https://picsum.photos/seed/newclinic/600/400',
+        imageHint: 'clinic exterior',
         isOpen: true,
         location: data.location,
         lat: 20.5937,
         lng: 78.9629,
         phone: '1234567890',
-        products: [],
         createdAt: serverTimestamp(),
       };
       
-      addDoc(shopsRef, shopData)
+      addDoc(clinicsRef, clinicData)
         .catch((error) => {
-            console.error("Error creating shop:", error);
+            console.error("Error creating clinic:", error);
             const permissionError = new FirestorePermissionError({
-                path: shopsRef.path,
+                path: clinicsRef.path,
                 operation: 'create',
-                requestResourceData: shopData,
+                requestResourceData: clinicData,
             });
             errorEmitter.emit('permission-error', permissionError);
         });
 
       toast({
         title: "Account Created",
-        description: "Your shop has been created and you are now logged in.",
+        description: "Your clinic has been created and you are now logged in.",
       });
       router.push('/dashboard');
     } catch (error: any) {
@@ -103,20 +101,20 @@ export default function SignupPage() {
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Create Your Shop Owner Account</CardTitle>
-          <CardDescription>Get started with managing your shop online.</CardDescription>
+          <CardTitle className="text-2xl">Create Your Clinic Account</CardTitle>
+          <CardDescription>Get started with managing your clinic online.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                     control={form.control}
-                    name="shopName"
+                    name="clinicName"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Shop Name</FormLabel>
+                            <FormLabel>Clinic Name</FormLabel>
                             <FormControl>
-                                <Input placeholder="My Awesome Shop" {...field} />
+                                <Input placeholder="My Awesome Clinic" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -127,7 +125,7 @@ export default function SignupPage() {
                     name="category"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Shop Category</FormLabel>
+                            <FormLabel>Clinic Category</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
@@ -135,7 +133,7 @@ export default function SignupPage() {
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {shopCategories.map(cat => (
+                                    {clinicCategories.map(cat => (
                                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -164,7 +162,7 @@ export default function SignupPage() {
                         <FormItem>
                             <FormLabel>Login Email</FormLabel>
                             <FormControl>
-                                <Input type="email" placeholder="owner@example.com" {...field} />
+                                <Input type="email" placeholder="manager@example.com" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -185,7 +183,7 @@ export default function SignupPage() {
                 />
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating Account...' : 'Sign Up & Create Shop'}
+                {isSubmitting ? 'Creating Account...' : 'Sign Up & Create Clinic'}
                 </Button>
             </form>
           </Form>
