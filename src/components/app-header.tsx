@@ -4,12 +4,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, Briefcase } from 'lucide-react';
+import { LogOut, Briefcase, ChevronDown } from 'lucide-react';
 import { useUser, useAuth, useFirestore, useCollection } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { collection, query, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function AppHeader() {
   const { user, loading: userLoading } = useUser();
@@ -93,14 +99,22 @@ export function AppHeader() {
                   </Button>
                 </>
               ) : (
-                <>
-                  <Button variant="ghost" asChild>
-                    <Link href="/login">Login</Link>
-                  </Button>
-                  <Button asChild>
-                    <Link href="/register">Register Business</Link>
-                  </Button>
-                </>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button>
+                      For Business
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link href="/login">Login</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/register">Register</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )
             )}
           </nav>
