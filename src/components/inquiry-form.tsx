@@ -5,14 +5,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/firebase/client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { DialogClose } from './ui/dialog';
+import { useFirestore } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const inquirySchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -25,6 +26,7 @@ type InquiryFormData = z.infer<typeof inquirySchema>;
 export function InquiryForm({ shopId }: { shopId: string }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const db = useFirestore();
   const form = useForm<InquiryFormData>({
     resolver: zodResolver(inquirySchema),
     defaultValues: {
@@ -36,30 +38,37 @@ export function InquiryForm({ shopId }: { shopId: string }) {
 
   async function onSubmit(values: InquiryFormData) {
     setIsSubmitting(true);
-    try {
-      await addDoc(collection(db, 'inquiries'), {
+    
+    const inquiryData = {
         ...values,
         shopId: shopId,
         createdAt: serverTimestamp(),
         isRead: false,
-      });
-      toast({
-        title: "Inquiry Sent!",
-        description: "The shop owner has been notified.",
-      });
-      form.reset();
-      // We can't easily close the dialog from here, but the user can click close.
-      // A better implementation would involve lifting state up.
-    } catch (error) {
-      console.error("Error sending inquiry:", error);
-      toast({
-        title: "Error",
-        description: "Could not send your inquiry. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    };
+
+    const inquiriesRef = collection(db, 'inquiries');
+    addDoc(inquiriesRef, inquiryData)
+    .then(() => {
+        toast({
+            title: "Inquiry Sent!",
+            description: "The shop owner has been notified.",
+        });
+        form.reset();
+        // Consider closing the dialog programmatically by lifting state
+    })
+    .catch((error) => {
+        console.error("Error sending inquiry:", error);
+
+        const permissionError = new FirestorePermissionError({
+            path: inquiriesRef.path,
+            operation: 'create',
+            requestResourceData: inquiryData,
+          });
+        errorEmitter.emit('permission-error', permissionError);
+    })
+    .finally(() => {
+        setIsSubmitting(false);
+    });
   }
 
   return (

@@ -1,58 +1,55 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '@/firebase/client';
+import { useMemo } from 'react';
+import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
 import type { Inquiry } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 
+// A type guard to check if a value is a Timestamp
+function isTimestamp(value: any): value is Timestamp {
+    return value && typeof value.toDate === 'function';
+}
+
 export function InquiryList() {
-    const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-    const [loading, setLoading] = useState(true);
-    const shopId = '1'; // Hardcoded for Ganesh Kirana Store
+    const firestore = useFirestore();
+    const shopId = '1'; // Hardcoded for now
 
-    useEffect(() => {
-        if (!shopId) return;
-
-        const q = query(
-            collection(db, "inquiries"), 
+    const inquiriesQuery = useMemo(() => {
+        if (!firestore || !shopId) return null;
+        return query(
+            collection(firestore, "inquiries"),
             where("shopId", "==", shopId),
             orderBy("createdAt", "desc")
         );
+    }, [firestore, shopId]);
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const inquiriesData: Inquiry[] = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                inquiriesData.push({
-                    id: doc.id,
-                    ...data,
-                    createdAt: data.createdAt.toDate(),
-                } as Inquiry);
-            });
-            setInquiries(inquiriesData);
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching inquiries:", error);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, [shopId]);
+    const { data: inquiries, loading } = useCollection(inquiriesQuery);
 
     if (loading) {
         return <p>Loading inquiries...</p>;
     }
 
-    if (inquiries.length === 0) {
+    if (!inquiries || inquiries.length === 0) {
         return <p>You have no inquiries yet.</p>;
     }
+    
+    const processedInquiries = inquiries.map(inquiry => {
+        const inquiryData = inquiry as any;
+        return {
+            ...inquiryData,
+            createdAt: isTimestamp(inquiryData.createdAt) 
+                ? inquiryData.createdAt.toDate()
+                : new Date(),
+        } as Inquiry;
+    }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
 
     return (
         <Accordion type="single" collapsible className="w-full">
-            {inquiries.map((inquiry) => (
+            {processedInquiries.map((inquiry) => (
                 <AccordionItem value={inquiry.id} key={inquiry.id}>
                     <AccordionTrigger>
                         <div className="flex justify-between w-full pr-4">
