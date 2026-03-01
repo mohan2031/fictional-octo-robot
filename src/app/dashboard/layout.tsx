@@ -17,7 +17,7 @@ export default function DashboardLayout({
             <SidebarHeader className="border-b">
               <div className="flex items-center gap-2 text-primary p-2">
                   <Stethoscope className="h-6 w-6"/>
-                  <span className="text-lg font-bold font-headline">HealthConnect</span>
+                  <span className="text-lg font-bold font-headline">ClinicConnect</span>
               </div>
             </SidebarHeader>
             <SidebarContent>

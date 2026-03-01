@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, LogOut, ShoppingCart } from 'lucide-react';
+import { Stethoscope, LogOut, ShoppingCart, Briefcase } from 'lucide-react';
 import { useUser, useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -36,8 +36,8 @@ export function AppHeader() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold font-headline text-primary">
-            <Stethoscope className="h-6 w-6" />
-            <span>HealthConnect</span>
+            <Briefcase className="h-6 w-6" />
+            <span>LocalLink</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>
@@ -52,6 +52,9 @@ export function AppHeader() {
                   <Button asChild>
                     <Link href="/dashboard">Clinic Dashboard</Link>
                   </Button>
+                   <Button asChild>
+                    <Link href="/shop-dashboard">Shop Dashboard</Link>
+                  </Button>
                   <Button variant="outline" size="icon" onClick={handleSignOut} title="Sign Out">
                     <LogOut className="h-4 w-4" />
                   </Button>
@@ -60,6 +63,9 @@ export function AppHeader() {
                 <>
                   <Button variant="ghost" asChild>
                     <Link href="/login">Login</Link>
+                  </Button>
+                   <Button asChild>
+                    <Link href="/signup-shop">Register Shop</Link>
                   </Button>
                   <Button asChild>
                     <Link href="/signup">Register Clinic</Link>

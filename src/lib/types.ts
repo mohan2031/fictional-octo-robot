@@ -48,7 +48,7 @@ export interface Product {
 export interface Shop {
   id: string;
   name: string;
-  category: string;
+  category: 'Grocery' | 'Electronics' | 'Plumbing' | 'Electrician' | 'Other';
   isOpen: boolean;
   location: string;
   lat: number;

@@ -43,7 +43,7 @@ const mapDocToShop = (document: DocumentData): Shop => {
     return {
       id: document.id,
       name: data.name || 'Unnamed Shop',
-      category: data.category || 'General',
+      category: data.category || 'Other',
       isOpen: data.isOpen === true,
       location: data.location || 'No location',
       lat: data.lat || 0,
