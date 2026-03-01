@@ -111,6 +111,7 @@
       "type": "object",
       "properties": {
         "shopId": { "type": "string" },
+        "userId": { "type": "string", "description": "The UID of the user who sent the inquiry, if they were logged in." },
         "name": { "type": "string" },
         "contact": { "type": "string" },
         "message": { "type": "string" },

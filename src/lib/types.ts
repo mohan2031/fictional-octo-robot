@@ -66,6 +66,7 @@ export interface Shop {
 export interface ShopInquiry {
   id: string;
   shopId: string;
+  userId?: string;
   name: string;
   contact: string;
   message: string;

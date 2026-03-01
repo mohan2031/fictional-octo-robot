@@ -4,10 +4,11 @@
 import { useMemo } from 'react';
 import { collection, query, where, orderBy, doc, getDocs } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
-import type { Appointment, Clinic } from '@/lib/types';
+import type { Appointment, ShopInquiry } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthGuard } from '../dashboard/auth-guard'; // Re-using the same auth guard
 import { AppointmentHistory } from './appointment-history';
+import { InquiryHistory } from './inquiry-history';
 
 
 export default function MyAccountPage() {
@@ -24,6 +25,18 @@ export default function MyAccountPage() {
     }, [firestore, user]);
 
     const { data: appointments, loading: appointmentsLoading } = useCollection(appointmentsQuery);
+
+    const inquiriesQuery = useMemo(() => {
+        if (!firestore || !user) return null;
+        return query(
+            collection(firestore, 'shop-inquiries'),
+            where('userId', '==', user.uid),
+            orderBy('createdAt', 'desc')
+        );
+    }, [firestore, user]);
+
+    const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
+
 
     return (
         <AuthGuard>
@@ -42,6 +55,19 @@ export default function MyAccountPage() {
                            <AppointmentHistory 
                                 appointments={appointments as Appointment[] | null} 
                                 loading={appointmentsLoading}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>My Shop Inquiries</CardTitle>
+                            <CardDescription>Here is a list of your recent messages to local shops.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           <InquiryHistory 
+                                inquiries={inquiries as ShopInquiry[] | null} 
+                                loading={inquiriesLoading}
                             />
                         </CardContent>
                     </Card>

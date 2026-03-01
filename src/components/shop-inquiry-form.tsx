@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { DialogClose } from './ui/dialog';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -27,6 +27,7 @@ export function ShopInquiryForm({ shopId, defaultMessage }: { shopId: string, de
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const db = useFirestore();
+  const { user } = useUser();
   const form = useForm<InquiryFormData>({
     resolver: zodResolver(inquirySchema),
     defaultValues: {
@@ -36,6 +37,13 @@ export function ShopInquiryForm({ shopId, defaultMessage }: { shopId: string, de
     },
   });
 
+  useEffect(() => {
+    if (user) {
+        if (user.displayName) form.setValue('name', user.displayName);
+        if (user.email) form.setValue('contact', user.email);
+    }
+  }, [user, form]);
+
   async function onSubmit(values: InquiryFormData) {
     setIsSubmitting(true);
     
@@ -44,6 +52,7 @@ export function ShopInquiryForm({ shopId, defaultMessage }: { shopId: string, de
         shopId: shopId,
         createdAt: serverTimestamp(),
         isRead: false,
+        ...(user && { userId: user.uid }),
     };
 
     const inquiriesRef = collection(db, 'shop-inquiries');

@@ -38,10 +38,12 @@ service cloud.firestore {
     }
 
     match /shop-inquiries/{inquiryId} {
-      // Anyone can submit an inquiry to a shop
-      allow create: if true;
-      // Only the shop owner can read or update their inquiries
-      allow read, update: if request.auth.uid != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
+      // Anyone can submit an inquiry to a shop. If logged in, the userId must match their auth uid.
+      allow create: if request.auth == null || request.resource.data.userId == request.auth.uid;
+      // The user who sent the inquiry can read it, as can the shop owner.
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid);
+      // Only the shop owner can update (e.g. mark as read).
+      allow update: if request.auth != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
     }
 
     match /users/{userId} {
