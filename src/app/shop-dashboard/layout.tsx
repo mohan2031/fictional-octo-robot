@@ -17,7 +17,7 @@ export default function ShopDashboardLayout({
             <SidebarHeader className="border-b">
               <div className="flex items-center gap-2 text-primary p-2">
                   <ShoppingCart className="h-6 w-6"/>
-                  <span className="text-lg font-bold font-headline">ShopConnect</span>
+                  <span className="text-lg font-bold font-headline">RuralReach</span>
               </div>
             </SidebarHeader>
             <SidebarContent>

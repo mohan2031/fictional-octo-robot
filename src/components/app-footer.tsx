@@ -7,9 +7,9 @@ export function AppFooter() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Briefcase className="h-5 w-5 text-primary" />
-            <span className="font-bold font-headline">LocalLink</span>
+            <span className="font-bold font-headline">RuralReach</span>
           </div>
-          <p className="text-sm text-muted-foreground">&copy; 2024 LocalLink. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">&copy; 2024 RuralReach. All rights reserved.</p>
         </div>
       </div>
     </footer>

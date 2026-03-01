@@ -64,7 +64,7 @@ export function AppHeader() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold font-headline text-primary">
             <Briefcase className="h-6 w-6" />
-            <span>LocalLink</span>
+            <span>RuralReach</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>
@@ -101,7 +101,7 @@ export function AppHeader() {
               ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button>
+                    <Button variant="outline">
                       For Business
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>

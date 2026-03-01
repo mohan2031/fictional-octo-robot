@@ -7,7 +7,7 @@ export default function RegisterPage() {
   return (
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
       <div className="text-center w-full">
-        <h1 className="text-4xl font-bold font-headline">Join LocalLink</h1>
+        <h1 className="text-4xl font-bold font-headline">Join RuralReach</h1>
         <p className="mt-2 text-lg text-muted-foreground">Choose your business type to get started.</p>
         <div className="grid md:grid-cols-2 gap-8 mt-8 max-w-4xl mx-auto">
           <Card className="text-center flex flex-col hover:shadow-lg transition-shadow">
@@ -21,7 +21,7 @@ export default function RegisterPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild className="w-full">
+              <Button asChild className="w-full" variant="accent">
                 <Link href="/signup">
                   Register as a Clinic <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -40,7 +40,7 @@ export default function RegisterPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild className="w-full">
+              <Button asChild className="w-full" variant="accent">
                 <Link href="/signup-shop">
                   Register as a Shop <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
