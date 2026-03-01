@@ -1,5 +1,5 @@
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader } from "@/components/ui/sidebar";
-import { Home, Package, Settings, Leaf } from "lucide-react";
+import { Home, Package, Settings, Leaf, Inbox } from "lucide-react";
 import Link from 'next/link';
 
 export default function DashboardLayout({
@@ -26,6 +26,11 @@ export default function DashboardLayout({
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Products">
                   <Link href="/dashboard/products"><Package /> <span>Products</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Inquiries">
+                  <Link href="/dashboard/inquiries"><Inbox /> <span>Inquiries</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

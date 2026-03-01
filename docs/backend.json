@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "inquiry": {
+      "title": "Inquiry",
+      "description": "A customer inquiry sent to a shop owner.",
+      "type": "object",
+      "properties": {
+        "shopId": {
+          "type": "string",
+          "description": "The ID of the shop the inquiry is for."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the person making the inquiry."
+        },
+        "contact": {
+          "type": "string",
+          "description": "Contact information (phone or email)."
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the inquiry message."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the inquiry was created."
+        },
+        "isRead": {
+            "type": "boolean",
+            "description": "Whether the shop owner has read the inquiry."
+        }
+      },
+      "required": ["shopId", "name", "contact", "message", "createdAt"]
+    },
+    "shop": {
+        "title": "Shop",
+        "description": "Represents a local shop or service provider.",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "category": { "type": "string" },
+            "ownerId": { "type": "string", "description": "The UID of the user who owns this shop." }
+        }
+    }
+  },
+  "auth": {
+    "providers": []
+  },
+  "firestore": {
+    "/inquiries/{inquiryId}": {
+      "schema": {
+        "$ref": "#/backend/entities/inquiry"
+      },
+      "description": "Stores customer inquiries for shops."
+    },
+    "/shops/{shopId}": {
+        "schema": {
+            "$ref": "#/backend/entities/shop"
+        },
+        "description": "Stores information about each shop."
+    }
+  }
+}

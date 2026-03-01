@@ -1,0 +1,118 @@
+"use client";
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { DialogClose } from './ui/dialog';
+
+const inquirySchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  contact: z.string().min(5, { message: "Please enter a valid contact." }),
+  message: z.string().min(10, { message: "Message must be at least 10 characters." }),
+});
+
+type InquiryFormData = z.infer<typeof inquirySchema>;
+
+export function InquiryForm({ shopId }: { shopId: string }) {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<InquiryFormData>({
+    resolver: zodResolver(inquirySchema),
+    defaultValues: {
+      name: "",
+      contact: "",
+      message: "",
+    },
+  });
+
+  async function onSubmit(values: InquiryFormData) {
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, 'inquiries'), {
+        ...values,
+        shopId: shopId,
+        createdAt: serverTimestamp(),
+        isRead: false,
+      });
+      toast({
+        title: "Inquiry Sent!",
+        description: "The shop owner has been notified.",
+      });
+      form.reset();
+      // We can't easily close the dialog from here, but the user can click close.
+      // A better implementation would involve lifting state up.
+    } catch (error) {
+      console.error("Error sending inquiry:", error);
+      toast({
+        title: "Error",
+        description: "Could not send your inquiry. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="contact"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your Phone or Email</FormLabel>
+              <FormControl>
+                <Input placeholder="9876543210" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="message"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your Message</FormLabel>
+              <FormControl>
+                <Textarea placeholder="e.g., Is the 10kg Bag of Rice in stock?" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex justify-end gap-2">
+            <DialogClose asChild>
+                <Button type="button" variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : 'Send Message'}
+            </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}

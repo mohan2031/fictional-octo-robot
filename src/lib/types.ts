@@ -20,3 +20,13 @@ export interface Shop {
   imageUrl: string;
   imageHint: string;
 }
+
+export interface Inquiry {
+  id: string;
+  shopId: string;
+  name: string;
+  contact: string;
+  message: string;
+  createdAt: Date;
+  isRead: boolean;
+}

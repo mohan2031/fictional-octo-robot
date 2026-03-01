@@ -7,8 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone, CheckCircle, XCircle, ShoppingBag } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { InquiryForm } from "@/components/inquiry-form";
 
 export default async function ShopDetailPage({ params }: { params: { id: string } }) {
   const shop = await getShopById(params.id);
@@ -115,13 +114,7 @@ export default async function ShopDetailPage({ params }: { params: { id: string 
                         Ask about product availability, prices, or anything else.
                       </DialogDescription>
                     </DialogHeader>
-                    <form className="space-y-4">
-                      <div>
-                        <Label htmlFor="inquiry-message">Your Message</Label>
-                        <Textarea id="inquiry-message" placeholder={`e.g., Is the ${shop.products[0]?.name || 'first product'} still in stock?`} />
-                      </div>
-                      <Button type="submit" className="w-full">Send Message</Button>
-                    </form>
+                    <InquiryForm shopId={shop.id} />
                   </DialogContent>
                 </Dialog>
               </CardContent>
