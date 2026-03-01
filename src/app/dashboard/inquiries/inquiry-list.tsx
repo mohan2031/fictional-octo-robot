@@ -7,6 +7,7 @@ import type { Inquiry } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { AiInquiryResponse } from '@/components/ai-inquiry-response';
 
 // A type guard to check if a value is a Timestamp
 function isTimestamp(value: any): value is Timestamp {
@@ -61,9 +62,12 @@ export function InquiryList() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                       <div className="prose prose-sm max-w-none text-muted-foreground">
+                       <div className="prose prose-sm max-w-none text-muted-foreground space-y-4">
                             <p><strong>From:</strong> {inquiry.name} ({inquiry.contact})</p>
                             <p>{inquiry.message}</p>
+                            <div className="not-prose">
+                                <AiInquiryResponse inquiry={inquiry} />
+                            </div>
                        </div>
                     </AccordionContent>
                 </AccordionItem>
