@@ -37,10 +37,13 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     return d;
 }
 
+const shopCategoriesList: Shop['category'][] = ['Grocery', 'Electronics', 'Plumbing', 'Electrician', 'Other'];
+const displayCategories = ['All', ...shopCategoriesList];
+
 
 export function ShopSearch({ shops }: ShopSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState('all');
+  const [category, setCategory] = useState('All');
   const [sortBy, setSortBy] = useState('default');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
@@ -77,12 +80,6 @@ export function ShopSearch({ shops }: ShopSearchProps) {
     }
   };
 
-  const categories = useMemo(() => {
-    const allCategories = shops.map(shop => shop.category);
-    // Capitalize first letter
-    return ['all', ...Array.from(new Set(allCategories))].map(c => c.charAt(0).toUpperCase() + c.slice(1));
-  }, [shops]);
-
   const filteredAndSortedShops = useMemo(() => {
     let processedShops = shops.map(shop => {
         const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, shop.lat, shop.lng) : null;
@@ -95,9 +92,8 @@ export function ShopSearch({ shops }: ShopSearchProps) {
         shop.name.toLowerCase().includes(lowerCaseSearchTerm) ||
         shop.description.toLowerCase().includes(lowerCaseSearchTerm);
       
-      const lowerCaseCategory = category.toLowerCase();
       const matchesCategory =
-        lowerCaseCategory === 'all' || shop.category.toLowerCase() === lowerCaseCategory;
+        category === 'All' || shop.category === category;
         
       return matchesSearch && matchesCategory;
     });
@@ -133,7 +129,7 @@ export function ShopSearch({ shops }: ShopSearchProps) {
                     <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
-                    {categories.map((cat) => (
+                    {displayCategories.map((cat) => (
                         <SelectItem key={cat} value={cat}>
                         {cat === 'All' ? 'All Categories' : cat}
                         </SelectItem>

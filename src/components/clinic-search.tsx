@@ -37,10 +37,13 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     return d;
 }
 
+const clinicCategoriesList: Clinic['category'][] = ['Dentist', 'General Physician', 'Cardiology', 'Pediatrics', 'Dermatology', 'Other'];
+const displayCategories = ['All', ...clinicCategoriesList];
+
 
 export function ClinicSearch({ clinics }: ClinicSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState('all');
+  const [category, setCategory] = useState('All');
   const [sortBy, setSortBy] = useState('default');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
@@ -77,12 +80,6 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
     }
   };
 
-  const categories = useMemo(() => {
-    const allCategories = clinics.map(clinic => clinic.category);
-    // Capitalize first letter
-    return ['all', ...Array.from(new Set(allCategories))].map(c => c.charAt(0).toUpperCase() + c.slice(1));
-  }, [clinics]);
-
   const filteredAndSortedClinics = useMemo(() => {
     let processedClinics = clinics.map(clinic => {
         const distance = userLocation ? getDistance(userLocation.lat, userLocation.lng, clinic.lat, clinic.lng) : null;
@@ -95,9 +92,8 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
         clinic.name.toLowerCase().includes(lowerCaseSearchTerm) ||
         clinic.description.toLowerCase().includes(lowerCaseSearchTerm);
       
-      const lowerCaseCategory = category.toLowerCase();
       const matchesCategory =
-        lowerCaseCategory === 'all' || clinic.category.toLowerCase() === lowerCaseCategory;
+        category === 'All' || clinic.category === category;
         
       return matchesSearch && matchesCategory;
     });
@@ -133,7 +129,7 @@ export function ClinicSearch({ clinics }: ClinicSearchProps) {
                     <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
-                    {categories.map((cat) => (
+                    {displayCategories.map((cat) => (
                         <SelectItem key={cat} value={cat}>
                         {cat === 'All' ? 'All Categories' : cat}
                         </SelectItem>
