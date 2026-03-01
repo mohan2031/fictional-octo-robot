@@ -1,4 +1,4 @@
-import type { Clinic } from './types';
+import type { Clinic, Shop } from './types';
 import { db } from '@/firebase/server';
 import { doc, getDoc, DocumentData, Timestamp } from 'firebase/firestore';
 
@@ -35,4 +35,40 @@ export const getClinicById = async (id: string): Promise<Clinic | null> => {
   }
   
   return mapDocToClinic(clinicSnap);
+};
+
+
+const mapDocToShop = (document: DocumentData): Shop => {
+    const data = document.data();
+    return {
+      id: document.id,
+      name: data.name || 'Unnamed Shop',
+      category: data.category || 'General',
+      isOpen: data.isOpen === true,
+      location: data.location || 'No location',
+      lat: data.lat || 0,
+      lng: data.lng || 0,
+      phone: data.phone || 'No phone',
+      hours: data.hours || 'Not specified',
+      description: data.description || 'No description provided.',
+      imageUrl: data.imageUrl || `https://picsum.photos/seed/${document.id}/600/400`,
+      imageHint: data.imageHint || 'shop',
+      ownerId: data.ownerId || '',
+      createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
+      products: data.products || [],
+    };
+  };
+
+export const getShopById = async (id: string): Promise<Shop | null> => {
+  if (!id) {
+    return null;
+  }
+  const shopRef = doc(db, 'shops', id);
+  const shopSnap = await getDoc(shopRef);
+
+  if (!shopSnap.exists()) {
+    return null;
+  }
+  
+  return mapDocToShop(shopSnap);
 };

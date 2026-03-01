@@ -67,6 +67,57 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["clinicId", "userId", "patientName", "appointmentDate", "reason", "status", "createdAt"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "A product or service sold by a shop.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "isAvailable": { "type": "boolean" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "imageHint": { "type": "string" }
+      }
+    },
+    "shop": {
+        "title": "Shop",
+        "description": "Represents a local shop or business.",
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "category": { "type": "string" },
+            "ownerId": { "type": "string" },
+            "description": { "type": "string" },
+            "location": { "type": "string" },
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "phone": { "type": "string" },
+            "hours": { "type": "string" },
+            "isOpen": { "type": "boolean" },
+            "imageUrl": { "type": "string", "format": "uri" },
+            "imageHint": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "products": {
+                "type": "array",
+                "items": { "$ref": "#/backend/entities/product" }
+            }
+        }
+    },
+    "shopInquiry": {
+      "title": "Shop Inquiry",
+      "description": "A customer inquiry sent to a shop owner.",
+      "type": "object",
+      "properties": {
+        "shopId": { "type": "string" },
+        "name": { "type": "string" },
+        "contact": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time"},
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["shopId", "name", "contact", "message", "createdAt"]
     }
   },
   "auth": {
@@ -90,6 +141,14 @@
             "$ref": "#/backend/entities/appointment"
         },
         "description": "Stores patient appointments for clinics."
+    },
+    "/shops/{shopId}": {
+      "schema": { "$ref": "#/backend/entities/shop" },
+      "description": "Stores information about each shop."
+    },
+    "/shop-inquiries/{inquiryId}": {
+        "schema": { "$ref": "#/backend/entities/shopInquiry" },
+        "description": "Stores customer inquiries for shops."
     }
   }
 }

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Check, Mail, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { InquiryForm } from "@/components/inquiry-form";
+import { ShopInquiryForm } from "@/components/shop-inquiry-form";
 
 interface ProductCardProps {
   product: Product;
@@ -49,7 +49,7 @@ export function ProductCard({ product, shopId }: ProductCardProps) {
                 Ask about availability, price, or other details for the product: <strong>{product.name}</strong>.
               </DialogDescription>
             </DialogHeader>
-            <InquiryForm 
+            <ShopInquiryForm 
               shopId={shopId} 
               defaultMessage={`I'm writing to inquire about the product: ${product.name}`} 
             />

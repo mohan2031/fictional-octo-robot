@@ -35,3 +35,40 @@ export interface Inquiry {
   createdAt: Date;
   isRead: boolean;
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  isAvailable: boolean;
+  imageUrl: string;
+  imageHint: string;
+}
+
+export interface Shop {
+  id: string;
+  name: string;
+  category: string;
+  isOpen: boolean;
+  location: string;
+  lat: number;
+  lng: number;
+  phone: string;
+  hours: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
+  ownerId: string;
+  createdAt?: Date;
+  products: Product[];
+}
+
+export interface ShopInquiry {
+  id: string;
+  shopId: string;
+  name: string;
+  contact: string;
+  message: string;
+  createdAt: Date;
+  isRead: boolean;
+}

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone, CheckCircle, XCircle, ShoppingBag } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { InquiryForm } from "@/components/inquiry-form";
+import { ShopInquiryForm } from "@/components/shop-inquiry-form";
 
 export default async function ShopDetailPage({ params }: { params: { id: string } }) {
   const shop = await getShopById(params.id);
@@ -58,7 +58,7 @@ export default async function ShopDetailPage({ params }: { params: { id: string 
                 <ShoppingBag className="h-6 w-6 text-primary" />
                 Products & Services
               </h2>
-              {shop.products.length > 0 ? (
+              {shop.products && shop.products.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {shop.products.map(product => (
                     <ProductCard key={product.id} product={product} shopId={shop.id} />
@@ -103,18 +103,18 @@ export default async function ShopDetailPage({ params }: { params: { id: string 
                 </div>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="w-full mt-4">
-                      <Mail className="mr-2 h-4 w-4" /> Send Inquiry
+                    <Button className="w-full mt-4" variant="outline">
+                      <Mail className="mr-2 h-4 w-4" /> Send a Message
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Send an Inquiry to {shop.name}</DialogTitle>
+                      <DialogTitle>Send a Message to {shop.name}</DialogTitle>
                       <DialogDescription>
                         Ask about product availability, prices, or anything else.
                       </DialogDescription>
                     </DialogHeader>
-                    <InquiryForm shopId={shop.id} />
+                    <ShopInquiryForm shopId={shop.id} />
                   </DialogContent>
                 </Dialog>
               </CardContent>

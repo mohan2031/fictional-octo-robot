@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /inquiries/{inquiryId} {
-      // Anyone can submit an inquiry
+      // Anyone can submit an inquiry to a clinic
       allow create: if true;
       // Only the clinic owner can read or update their inquiries
       allow read, update: if request.auth.uid != null && get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid;
@@ -26,6 +26,22 @@ service cloud.firestore {
       allow update: if request.auth.uid != null && (request.auth.uid == resource.data.userId || get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid);
       // Only the user who booked can delete their appointment.
       allow delete: if request.auth.uid != null && request.auth.uid == resource.data.userId;
+    }
+
+    match /shops/{shopId} {
+      // Anyone can view a shop
+      allow read: if true;
+      // A logged-in user can create a shop if they are the owner
+      allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.ownerId;
+      // Only the owner can update their shop details
+      allow update: if request.auth.uid != null && request.auth.uid == resource.data.ownerId;
+    }
+
+    match /shop-inquiries/{inquiryId} {
+      // Anyone can submit an inquiry to a shop
+      allow create: if true;
+      // Only the shop owner can read or update their inquiries
+      allow read, update: if request.auth.uid != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
     }
   }
 }

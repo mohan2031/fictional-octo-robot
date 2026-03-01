@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, LogOut } from 'lucide-react';
+import { Stethoscope, LogOut, ShoppingCart } from 'lucide-react';
 import { useUser, useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +42,9 @@ export function AppHeader() {
           <nav className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>
               <Link href="/">Find a Clinic</Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/shops">Find a Shop</Link>
             </Button>
             {!loading && (
               user ? (
