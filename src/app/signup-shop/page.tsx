@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +11,7 @@ import { collection, addDoc, setDoc, doc, serverTimestamp } from 'firebase/fires
 import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
@@ -29,6 +31,9 @@ const signupSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   category: z.enum(shopCategories, { required_error: "Please select a category." }),
   location: z.string().min(3, { message: "Location must be at least 3 characters." }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  hours: z.string().min(5, { message: "Please enter your opening hours." }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters." }),
 });
 
 type SignupFormData = z.infer<typeof signupSchema>;
@@ -45,6 +50,9 @@ export default function SignupShopPage() {
         shopName: '',
         email: '',
         location: "",
+        phone: "",
+        hours: "",
+        description: "",
     }
   });
 
@@ -81,15 +89,15 @@ export default function SignupShopPage() {
         name: data.shopName,
         ownerId: user.uid,
         category: data.category,
-        description: `Welcome to ${data.shopName}!`,
-        hours: '9 AM - 5 PM',
+        description: data.description,
+        hours: data.hours,
         imageUrl: placeholder.imageUrl,
         imageHint: placeholder.imageHint,
         isOpen: true,
         location: data.location,
         lat: 20.5937,
         lng: 78.9629,
-        phone: '1234567890',
+        phone: data.phone,
         products: [],
         createdAt: serverTimestamp(),
       };
@@ -123,7 +131,7 @@ export default function SignupShopPage() {
 
   return (
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Create Your Shop Account</CardTitle>
           <CardDescription>Get started with managing your business online.</CardDescription>
@@ -144,41 +152,84 @@ export default function SignupShopPage() {
                         </FormItem>
                     )}
                 />
-                <FormField
+                 <FormField
                     control={form.control}
-                    name="category"
+                    name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Shop Category</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a category" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {shopCategories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Your Town/Village</FormLabel>
+                            <FormLabel>Shop Description</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g., Springfield" {...field} />
+                                <Textarea placeholder="A short description of your shop and what you sell." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Shop Category</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a category" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {shopCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Your Town/Village</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., Springfield" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Contact Phone</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="1234567890" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="hours"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Opening Hours</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., 10 AM - 7 PM, Tue-Sun" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 <FormField
                     control={form.control}
                     name="email"
