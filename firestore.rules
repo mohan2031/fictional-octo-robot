@@ -79,6 +79,7 @@ service cloud.firestore {
     
     function isInquiry(data) {
         return data.clinicId is string
+            && (!('userId' in data) || data.userId is string)
             && data.name is string && data.name.size() > 1
             && data.contact is string && data.contact.size() > 4
             && data.message is string && data.message.size() > 9
@@ -114,10 +115,14 @@ service cloud.firestore {
     // =====================================================================
 
     match /inquiries/{inquiryId} {
-      // Anyone can submit an inquiry to a clinic, as long as the data is valid
-      allow create: if isInquiry(request.resource.data);
-      // Only the clinic owner can read or update their inquiries (to mark as read)
-      allow read: if request.auth.uid != null && get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid;
+      // Anyone can submit an inquiry, but if logged in, userId must match.
+      allow create: if (request.auth == null || request.resource.data.userId == request.auth.uid) 
+                    && isInquiry(request.resource.data);
+      // Clinic owner OR user who sent it can read.
+      allow read: if request.auth.uid != null && (
+                    get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid || 
+                    resource.data.userId == request.auth.uid
+                  );
       allow update: if request.auth.uid != null 
                     && get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid
                     && request.resource.data.isRead == true

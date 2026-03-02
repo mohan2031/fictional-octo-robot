@@ -4,14 +4,15 @@
 import { useMemo } from 'react';
 import { collection, query, where, orderBy, doc } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
-import type { Appointment, ShopInquiry, UserProfile } from '@/lib/types';
+import type { Appointment, ShopInquiry, UserProfile, Inquiry } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthGuard } from '../dashboard/auth-guard'; // Re-using the same auth guard
 import { AppointmentHistory } from './appointment-history';
 import { InquiryHistory } from './inquiry-history';
 import { EditProfileForm } from '@/components/edit-profile-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { mapToAppointment, mapToShopInquiry, mapToUserProfile } from '@/lib/type-mappers';
+import { mapToAppointment, mapToShopInquiry, mapToUserProfile, mapToInquiry } from '@/lib/type-mappers';
+import { ClinicInquiryHistory } from './clinic-inquiry-history';
 
 export default function MyAccountPage() {
   const firestore = useFirestore();
@@ -59,6 +60,21 @@ export default function MyAccountPage() {
     return inquiryDocs.map(mapToShopInquiry).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [inquiryDocs]);
 
+  const clinicInquiriesQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'inquiries'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+  }, [firestore, user]);
+
+  const { data: clinicInquiryDocs, loading: clinicInquiriesLoading } = useCollection(clinicInquiriesQuery);
+  const clinicInquiries: Inquiry[] | null = useMemo(() => {
+    if (!clinicInquiryDocs) return null;
+    return clinicInquiryDocs.map(mapToInquiry).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }, [clinicInquiryDocs]);
+
 
   return (
     <AuthGuard>
@@ -102,6 +118,19 @@ export default function MyAccountPage() {
               <AppointmentHistory
                 appointments={appointments}
                 loading={appointmentsLoading}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>My Clinic Inquiries</CardTitle>
+              <CardDescription>Here is a list of your recent messages to local clinics.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ClinicInquiryHistory
+                inquiries={clinicInquiries}
+                loading={clinicInquiriesLoading}
               />
             </CardContent>
           </Card>

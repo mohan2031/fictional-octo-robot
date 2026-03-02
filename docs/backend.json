@@ -9,6 +9,10 @@
           "type": "string",
           "description": "The ID of the clinic the inquiry is for."
         },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who sent the inquiry, if they were logged in."
+        },
         "name": {
           "type": "string",
           "description": "Name of the person making the inquiry."
