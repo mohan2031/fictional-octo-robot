@@ -2,62 +2,195 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // =====================================================================
+    // Helper Functions for Schema Validation
+    // =====================================================================
+
+    function isUserProfile(data) {
+      return data.displayName is string && data.displayName.size() > 1
+          && data.email is string && data.email.matches('.*@.*')
+          && data.role is string && (data.role == 'customer' || data.role == 'owner')
+          && (
+            (request.method == 'create' && data.createdAt == request.time) ||
+            (request.method == 'update' && data.createdAt is timestamp)
+          );
+    }
+
+    function isClinic(data) {
+        return data.name is string && data.name.size() > 1
+          && data.category is string
+          && data.ownerId is string
+          && data.description is string
+          && data.location is string
+          && data.lat is number
+          && data.lng is number
+          && data.phone is string
+          && data.hours is string
+          && data.isOpen is bool
+          && data.imageUrl is string
+          && data.imageHint is string
+          && (
+            (request.method == 'create' && data.createdAt == request.time) ||
+            (request.method == 'update' && data.createdAt is timestamp)
+          );
+    }
+
+    function isProduct(p) {
+        return p.id is string
+            && p.name is string && p.name.size() > 1
+            && p.description is string && p.description.size() > 9
+            && p.isAvailable is bool
+            && p.imageUrl is string
+            && p.imageHint is string;
+    }
+
+    function areValidProducts(products) {
+        return products.size() >= 0 && products.all(p, isProduct(p));
+    }
+
+    function isShop(data) {
+        return data.name is string && data.name.size() > 1
+          && data.category is string
+          && data.ownerId is string
+          && data.description is string
+          && data.location is string
+          && data.lat is number
+          && data.lng is number
+          && data.phone is string
+          && data.hours is string
+          && data.isOpen is bool
+          && data.imageUrl is string
+          && data.imageHint is string
+          && (
+            (request.method == 'create' && data.createdAt == request.time) ||
+            (request.method == 'update' && data.createdAt is timestamp)
+          )
+          && data.products is list && areValidProducts(data.products);
+    }
+    
+    function isAppointment(data) {
+      return data.clinicId is string
+          && data.userId is string
+          && data.patientName is string && data.patientName.size() > 1
+          && data.appointmentDate is timestamp
+          && data.reason is string && data.reason.size() > 9
+          && data.status is string && (data.status == 'scheduled' || data.status == 'completed' || data.status == 'cancelled')
+          && (
+            (request.method == 'create' && data.createdAt == request.time) ||
+            (request.method == 'update' && data.createdAt is timestamp)
+          );
+    }
+    
+    function isInquiry(data) {
+        return data.clinicId is string
+            && data.name is string && data.name.size() > 1
+            && data.contact is string && data.contact.size() > 4
+            && data.message is string && data.message.size() > 9
+            && data.createdAt == request.time
+            && data.isRead == false;
+    }
+    
+    function isShopInquiry(data) {
+        return data.shopId is string
+            && (!('userId' in data) || data.userId is string)
+            && data.name is string && data.name.size() > 1
+            && data.contact is string && data.contact.size() > 4
+            && data.message is string && data.message.size() > 9
+            && data.createdAt == request.time
+            && data.isRead == false;
+    }
+
+    function isReview(data) {
+      return data.businessId is string
+          && data.businessType is string && (data.businessType == 'clinic' || data.businessType == 'shop')
+          && data.userId is string
+          && data.authorName is string
+          && data.rating is number && data.rating >= 1 && data.rating <= 5
+          && data.comment is string && data.comment.size() > 9
+          && (
+            (request.method == 'create' && data.createdAt == request.time) ||
+            (request.method == 'update' && data.createdAt is timestamp)
+          );
+    }
+    
+    // =====================================================================
+    // Collection Rules
+    // =====================================================================
+
     match /inquiries/{inquiryId} {
-      // Anyone can submit an inquiry to a clinic
-      allow create: if true;
-      // Only the clinic owner can read or update their inquiries
-      allow read, update: if request.auth.uid != null && get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid;
+      // Anyone can submit an inquiry to a clinic, as long as the data is valid
+      allow create: if isInquiry(request.resource.data);
+      // Only the clinic owner can read or update their inquiries (to mark as read)
+      allow read: if request.auth.uid != null && get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid;
+      allow update: if request.auth.uid != null 
+                    && get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid
+                    && request.resource.data.isRead == true
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
     }
 
     match /clinics/{clinicId} {
-      // Anyone can view a clinic
       allow read: if true;
-      // A logged-in user can create a clinic if they are the owner
-      allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.ownerId;
-      // Only the owner can update their clinic details
-      allow update: if request.auth.uid != null && request.auth.uid == resource.data.ownerId;
+      allow create: if request.auth.uid != null 
+                    && request.auth.uid == request.resource.data.ownerId
+                    && isClinic(request.resource.data);
+      allow update: if request.auth.uid != null 
+                    && request.auth.uid == resource.data.ownerId
+                    && isClinic(request.resource.data);
     }
 
     match /appointments/{appointmentId} {
-      // A logged in user can create an appointment for themselves
-      allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.userId;
-      // The user who booked can view/cancel. The clinic owner can view/update.
+      allow create: if request.auth.uid != null 
+                    && request.auth.uid == request.resource.data.userId
+                    && isAppointment(request.resource.data);
       allow read: if request.auth.uid != null && (request.auth.uid == resource.data.userId || get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid);
-      allow update: if request.auth.uid != null && (request.auth.uid == resource.data.userId || get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid);
-      // Only the user who booked can delete their appointment.
+      allow update: if request.auth.uid != null && (
+            ( // User can cancel their own appointment
+              request.auth.uid == resource.data.userId &&
+              request.resource.data.status == 'cancelled' &&
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            ) || ( // Owner can update the status
+              get(/databases/$(database)/documents/clinics/$(resource.data.clinicId)).data.ownerId == request.auth.uid &&
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            )
+          );
       allow delete: if request.auth.uid != null && request.auth.uid == resource.data.userId;
     }
 
     match /shops/{shopId} {
-      // Anyone can view a shop
       allow read: if true;
-      // A logged-in user can create a shop if they are the owner
-      allow create: if request.auth.uid != null && request.auth.uid == request.resource.data.ownerId;
-      // Only the owner can update their shop details
-      allow update: if request.auth.uid != null && request.auth.uid == resource.data.ownerId;
+      allow create: if request.auth.uid != null 
+                    && request.auth.uid == request.resource.data.ownerId
+                    && isShop(request.resource.data)
+                    && request.resource.data.products.size() == 0;
+      allow update: if request.auth.uid != null 
+                    && request.auth.uid == resource.data.ownerId
+                    && isShop(request.resource.data);
     }
 
     match /shop-inquiries/{inquiryId} {
-      // Anyone can submit an inquiry to a shop. If logged in, the userId must match their auth uid.
-      allow create: if request.auth == null || request.resource.data.userId == request.auth.uid;
-      // The user who sent the inquiry can read it, as can the shop owner.
+      allow create: if (request.auth == null || request.resource.data.userId == request.auth.uid)
+                    && isShopInquiry(request.resource.data);
       allow read: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid);
-      // Only the shop owner can update (e.g. mark as read).
-      allow update: if request.auth != null && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
+      allow update: if request.auth != null 
+                    && get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid
+                    && request.resource.data.isRead == true
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
     }
 
     match /users/{userId} {
-      // A user can create their own profile, and can only read/write their own data.
-      allow create, read, update: if request.auth.uid == userId;
+      allow create, update: if request.auth.uid == userId && isUserProfile(request.resource.data);
+      allow read: if request.auth.uid == userId;
     }
 
     match /reviews/{reviewId} {
-      // Anyone can read reviews
       allow read: if true;
-      // An authenticated user can create a review if they are the author
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      // The author can update or delete their own review
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null 
+                    && request.auth.uid == request.resource.data.userId
+                    && isReview(request.resource.data);
+      allow update, delete: if request.auth != null 
+                          && request.auth.uid == resource.data.userId
+                          && isReview(request.resource.data);
     }
   }
 }
