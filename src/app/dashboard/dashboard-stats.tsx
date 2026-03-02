@@ -11,7 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { subDays, format, startOfDay, isSameDay } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { mapToClinic, mapToInquiry } from '@/lib/type-mappers';
+import { mapToClinic, mapToInquiry, mapToAppointment } from '@/lib/type-mappers';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) {
@@ -66,12 +66,17 @@ export function DashboardStats() {
         );
     }, [firestore, clinicId]);
 
-    const { data: appointments, loading: appointmentsLoading } = useCollection(appointmentsQuery);
+    const { data: appointmentDocs, loading: appointmentsLoading } = useCollection(appointmentsQuery);
 
     const processedInquiries: Inquiry[] = useMemo(() => {
         if (!inquiryDocs) return [];
         return inquiryDocs.map(mapToInquiry);
     }, [inquiryDocs]);
+    
+    const processedAppointments: Appointment[] = useMemo(() => {
+        if (!appointmentDocs) return [];
+        return appointmentDocs.map(mapToAppointment);
+    }, [appointmentDocs]);
 
     const inquiryStats = useMemo(() => {
         const totalInquiries = processedInquiries.length;
@@ -88,6 +93,19 @@ export function DashboardStats() {
         return { totalInquiries, unreadInquiries, chartData };
     }, [processedInquiries]);
 
+    const appointmentStats = useMemo(() => {
+        const totalAppointments = processedAppointments.length;
+        const today = startOfDay(new Date());
+        const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
+
+        const chartData = last7Days.map(day => ({
+            date: format(day, 'MMM d'),
+            appointments: processedAppointments.filter(appt => isSameDay(appt.appointmentDate, day)).length,
+        }));
+        
+        return { totalAppointments, chartData };
+    }, [processedAppointments]);
+
 
     if (clinicsLoading || inquiriesLoading || appointmentsLoading) {
         return (
@@ -101,13 +119,15 @@ export function DashboardStats() {
     if (!clinic) {
         return <p className="text-center text-muted-foreground py-8">You haven't set up a clinic yet. Please sign up to create one.</p>;
     }
-
-    const totalAppointments = appointments?.length || 0;
     
     const chartConfig = {
       inquiries: {
-        label: "Inquiries",
+        label: "Messages",
         color: "hsl(var(--chart-1))",
+      },
+      appointments: {
+        label: "Appointments",
+        color: "hsl(var(--chart-2))",
       },
     } satisfies ChartConfig;
 
@@ -115,36 +135,63 @@ export function DashboardStats() {
     return (
         <div>
             <div className="grid gap-4 md:grid-cols-3">
-                <StatCard title="Total Appointments" value={totalAppointments} icon={CalendarDays} />
+                <StatCard title="Total Appointments" value={appointmentStats.totalAppointments} icon={CalendarDays} />
                 <StatCard title="Total Messages" value={inquiryStats.totalInquiries} icon={Inbox} />
                 <StatCard title="Unread Messages" value={inquiryStats.unreadInquiries} icon={MessageSquareWarning} />
             </div>
 
-            <Card className="mt-8">
-                <CardHeader>
-                    <CardTitle>Recent Messages</CardTitle>
-                    <CardDescription>Messages received over the last 7 days.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                        <BarChart accessibilityLayer data={inquiryStats.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                tickMargin={10}
-                                axisLine={false}
-                            />
-                            <YAxis allowDecimals={false} />
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent />}
-                            />
-                            <Bar dataKey="inquiries" fill="var(--color-inquiries)" radius={8} />
-                        </BarChart>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
+            <div className="grid lg:grid-cols-2 gap-8 mt-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Messages</CardTitle>
+                        <CardDescription>Messages received over the last 7 days.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                            <BarChart accessibilityLayer data={inquiryStats.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                />
+                                <YAxis allowDecimals={false} />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent />}
+                                />
+                                <Bar dataKey="inquiries" fill="var(--color-inquiries)" radius={8} />
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Appointments</CardTitle>
+                        <CardDescription>Appointments scheduled over the last 7 days.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                            <BarChart accessibilityLayer data={appointmentStats.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                />
+                                <YAxis allowDecimals={false} />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent />}
+                                />
+                                <Bar dataKey="appointments" fill="var(--color-appointments)" radius={8} />
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
 
             <Card className="mt-8">
                 <CardHeader>
