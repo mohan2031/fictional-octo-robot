@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -10,6 +11,7 @@ import { AppointmentHistory } from './appointment-history';
 import { InquiryHistory } from './inquiry-history';
 import { EditProfileForm } from '@/components/edit-profile-form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { mapToAppointment, mapToShopInquiry, mapToUserProfile } from '@/lib/type-mappers';
 
 export default function MyAccountPage() {
   const firestore = useFirestore();
@@ -20,7 +22,11 @@ export default function MyAccountPage() {
     return doc(firestore, 'users', user.uid);
   }, [firestore, user]);
 
-  const { data: userProfile, loading: userProfileLoading } = useDoc(userProfileRef);
+  const { data: userProfileDoc, loading: userProfileLoading } = useDoc(userProfileRef);
+
+  const userProfile: UserProfile | null = useMemo(() => {
+    return userProfileDoc ? mapToUserProfile(userProfileDoc) : null;
+  }, [userProfileDoc]);
 
   const appointmentsQuery = useMemo(() => {
     if (!firestore || !user) return null;
@@ -31,7 +37,12 @@ export default function MyAccountPage() {
     );
   }, [firestore, user]);
 
-  const { data: appointments, loading: appointmentsLoading } = useCollection(appointmentsQuery);
+  const { data: appointmentDocs, loading: appointmentsLoading } = useCollection(appointmentsQuery);
+  const appointments: Appointment[] | null = useMemo(() => {
+    if (!appointmentDocs) return null;
+    return appointmentDocs.map(mapToAppointment).sort((a, b) => b.appointmentDate.getTime() - a.appointmentDate.getTime());
+  }, [appointmentDocs]);
+
 
   const inquiriesQuery = useMemo(() => {
     if (!firestore || !user) return null;
@@ -42,7 +53,12 @@ export default function MyAccountPage() {
     );
   }, [firestore, user]);
 
-  const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
+  const { data: inquiryDocs, loading: inquiriesLoading } = useCollection(inquiriesQuery);
+  const inquiries: ShopInquiry[] | null = useMemo(() => {
+    if (!inquiryDocs) return null;
+    return inquiryDocs.map(mapToShopInquiry).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }, [inquiryDocs]);
+
 
   return (
     <AuthGuard>
@@ -70,7 +86,7 @@ export default function MyAccountPage() {
                    <Skeleton className="h-10 w-32 ml-auto" />
                 </div>
               ) : userProfile ? (
-                <EditProfileForm profile={userProfile as UserProfile} />
+                <EditProfileForm profile={userProfile} />
               ) : (
                 <p>Could not load your profile information.</p>
               )}
@@ -84,7 +100,7 @@ export default function MyAccountPage() {
             </CardHeader>
             <CardContent>
               <AppointmentHistory
-                appointments={appointments as Appointment[] | null}
+                appointments={appointments}
                 loading={appointmentsLoading}
               />
             </CardContent>
@@ -97,7 +113,7 @@ export default function MyAccountPage() {
             </CardHeader>
             <CardContent>
               <InquiryHistory
-                inquiries={inquiries as ShopInquiry[] | null}
+                inquiries={inquiries}
                 loading={inquiriesLoading}
               />
             </CardContent>

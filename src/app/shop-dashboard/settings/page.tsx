@@ -1,12 +1,14 @@
+
 "use client";
 
 import { useMemo } from 'react';
-import { collection, query, where, DocumentData } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Shop } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EditShopForm } from '@/components/edit-shop-form';
 import { Loader2 } from 'lucide-react';
+import { mapToShop } from '@/lib/type-mappers';
 
 export default function SettingsPage() {
     const firestore = useFirestore();
@@ -20,9 +22,11 @@ export default function SettingsPage() {
         );
     }, [firestore, user]);
 
-    const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
+    const { data: shopDocs, loading: shopsLoading } = useCollection(shopsQuery);
     
-    const shop = shops?.[0] as DocumentData as Shop | undefined;
+    const shop: Shop | undefined = useMemo(() => {
+        return shopDocs && shopDocs.length > 0 ? mapToShop(shopDocs[0]) : undefined;
+    }, [shopDocs]);
 
     return (
         <div className="space-y-8 max-w-2xl mx-auto">

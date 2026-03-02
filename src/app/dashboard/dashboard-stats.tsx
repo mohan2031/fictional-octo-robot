@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { subDays, format, startOfDay, isSameDay } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import { mapToClinic, mapToInquiry } from '@/lib/type-mappers';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) {
@@ -40,9 +41,11 @@ export function DashboardStats() {
         );
     }, [firestore, user]);
 
-    const { data: clinics, loading: clinicsLoading } = useCollection(clinicsQuery);
+    const { data: clinicDocs, loading: clinicsLoading } = useCollection(clinicsQuery);
     
-    const clinic = clinics?.[0] as Clinic | undefined;
+    const clinic: Clinic | undefined = useMemo(() => {
+        return clinicDocs && clinicDocs.length > 0 ? mapToClinic(clinicDocs[0]) : undefined;
+    }, [clinicDocs]);
     const clinicId = clinic?.id;
 
     const inquiriesQuery = useMemo(() => {
@@ -53,7 +56,7 @@ export function DashboardStats() {
         );
     }, [firestore, clinicId]);
 
-    const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
+    const { data: inquiryDocs, loading: inquiriesLoading } = useCollection(inquiriesQuery);
 
     const appointmentsQuery = useMemo(() => {
         if (!firestore || !clinicId) return null;
@@ -65,16 +68,10 @@ export function DashboardStats() {
 
     const { data: appointments, loading: appointmentsLoading } = useCollection(appointmentsQuery);
 
-    const processedInquiries = useMemo(() => {
-        if (!inquiries) return [];
-        return inquiries.map(inq => {
-            const inquiryData = inq as any;
-            return {
-                ...inquiryData,
-                createdAt: inquiryData.createdAt?.toDate ? inquiryData.createdAt.toDate() : new Date(inquiryData.createdAt)
-            } as Inquiry
-        });
-    }, [inquiries]);
+    const processedInquiries: Inquiry[] = useMemo(() => {
+        if (!inquiryDocs) return [];
+        return inquiryDocs.map(mapToInquiry);
+    }, [inquiryDocs]);
 
     const inquiryStats = useMemo(() => {
         const totalInquiries = processedInquiries.length;

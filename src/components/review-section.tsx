@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
@@ -11,10 +12,7 @@ import { ReviewStars } from './review-stars';
 import { formatDistanceToNow } from 'date-fns';
 import { ReviewForm } from './review-form';
 import { Separator } from './ui/separator';
-
-function isTimestamp(value: any): value is Timestamp {
-    return value && typeof value.toDate === 'function';
-}
+import { mapToReview } from '@/lib/type-mappers';
 
 function ReviewCard({ review }: { review: Review }) {
     return (
@@ -57,19 +55,16 @@ export function ReviewSection({ businessId, businessType }: ReviewSectionProps) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firestore, businessId, reviewSubmittedKey]);
 
-  const { data: reviews, loading } = useCollection(reviewsQuery);
+  const { data: reviewDocs, loading } = useCollection(reviewsQuery);
 
   const onReviewSubmit = useCallback(() => {
     setReviewSubmittedKey(prev => prev + 1);
   }, []);
 
-  const processedReviews = useMemo(() => {
-    if (!reviews) return [];
-    return reviews.map(review => {
-        const reviewData = review as any;
-        return { ...reviewData, createdAt: isTimestamp(reviewData.createdAt) ? reviewData.createdAt.toDate() : new Date() } as Review;
-    });
-  }, [reviews]);
+  const processedReviews: Review[] = useMemo(() => {
+    if (!reviewDocs) return [];
+    return reviewDocs.map(mapToReview);
+  }, [reviewDocs]);
   
   const { averageRating, totalReviews } = useMemo(() => {
     if (!processedReviews || processedReviews.length === 0) {

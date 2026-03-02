@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { subDays, format, startOfDay, isSameDay } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import { mapToShop, mapToShopInquiry } from '@/lib/type-mappers';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) {
@@ -40,9 +41,11 @@ export function DashboardStats() {
         );
     }, [firestore, user]);
 
-    const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
+    const { data: shopDocs, loading: shopsLoading } = useCollection(shopsQuery);
     
-    const shop = shops?.[0] as Shop | undefined;
+    const shop: Shop | undefined = useMemo(() => {
+        return shopDocs && shopDocs.length > 0 ? mapToShop(shopDocs[0]) : undefined;
+    }, [shopDocs]);
     const shopId = shop?.id;
 
     const productsQuery = useMemo(() => {
@@ -60,18 +63,12 @@ export function DashboardStats() {
         );
     }, [firestore, shopId]);
 
-    const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
+    const { data: inquiryDocs, loading: inquiriesLoading } = useCollection(inquiriesQuery);
 
-    const processedInquiries = useMemo(() => {
-        if (!inquiries) return [];
-        return inquiries.map(inq => {
-            const inquiryData = inq as any;
-            return {
-                ...inquiryData,
-                createdAt: inquiryData.createdAt?.toDate ? inquiryData.createdAt.toDate() : new Date(inquiryData.createdAt)
-            } as ShopInquiry
-        });
-    }, [inquiries]);
+    const processedInquiries: ShopInquiry[] = useMemo(() => {
+        if (!inquiryDocs) return [];
+        return inquiryDocs.map(mapToShopInquiry);
+    }, [inquiryDocs]);
 
     const inquiryStats = useMemo(() => {
         const totalInquiries = processedInquiries.length;

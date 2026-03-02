@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useMemo } from 'react';
-import { collection, query, where, orderBy, Timestamp, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { ShopInquiry } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -11,11 +12,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Loader2 } from 'lucide-react';
 import { AiShopInquiryResponse } from '@/components/ai-shop-inquiry-response';
-
-// A type guard to check if a value is a Timestamp
-function isTimestamp(value: any): value is Timestamp {
-    return value && typeof value.toDate === 'function';
-}
+import { mapToShopInquiry } from '@/lib/type-mappers';
 
 export function InquiryList() {
     const firestore = useFirestore();
@@ -43,20 +40,12 @@ export function InquiryList() {
         );
     }, [firestore, shopId]);
 
-    const { data: inquiries, loading: inquiriesLoading } = useCollection(inquiriesQuery);
+    const { data: inquiryDocs, loading: inquiriesLoading } = useCollection(inquiriesQuery);
 
-    const processedInquiries = useMemo(() => {
-        if (!inquiries) return [];
-        return inquiries.map(inquiry => {
-            const inquiryData = inquiry as any;
-            return {
-                ...inquiryData,
-                createdAt: isTimestamp(inquiryData.createdAt) 
-                    ? inquiryData.createdAt.toDate()
-                    : new Date(),
-            } as ShopInquiry;
-        }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    }, [inquiries]);
+    const processedInquiries: ShopInquiry[] = useMemo(() => {
+        if (!inquiryDocs) return [];
+        return inquiryDocs.map(mapToShopInquiry).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }, [inquiryDocs]);
 
     const handleInquiryOpen = (inquiryId: string) => {
         if (!firestore || !inquiryId) return;

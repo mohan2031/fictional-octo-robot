@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -42,6 +43,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
+import { mapToProduct, mapToShop } from '@/lib/type-mappers';
 
 
 const productSchema = z.object({
@@ -92,15 +94,21 @@ export default function ProductsPage() {
     return query(collection(firestore, 'shops'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
-  const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
-  const shop = shops?.[0] as Shop | undefined;
+  const { data: shopDocs, loading: shopsLoading } = useCollection(shopsQuery);
+  const shop: Shop | undefined = useMemo(() => {
+    return shopDocs && shopDocs.length > 0 ? mapToShop(shopDocs[0]) : undefined;
+  }, [shopDocs]);
 
   const productsQuery = useMemo(() => {
     if (!firestore || !shop) return null;
     return query(collection(firestore, 'shops', shop.id, 'products'));
   }, [firestore, shop]);
   
-  const { data: products, loading: productsLoading } = useCollection(productsQuery);
+  const { data: productDocs, loading: productsLoading } = useCollection(productsQuery);
+  const products: Product[] = useMemo(() => {
+    if (!productDocs) return [];
+    return productDocs.map(mapToProduct);
+  }, [productDocs]);
 
   const handleGenerateDescription = async (form: typeof addForm | typeof editForm) => {
     const productName = form.getValues('name');
@@ -137,7 +145,7 @@ export default function ProductsPage() {
     setIsSubmitting(true);
     try {
         const placeholder = getPlaceholderImage(data.name);
-        const newProduct: Omit<Product, 'id'> = {
+        const newProductData = {
             ...data,
             id: uuidv4(), // isProduct rule expects id
             imageUrl: placeholder.imageUrl,
@@ -146,11 +154,11 @@ export default function ProductsPage() {
 
         const productsRef = collection(firestore, 'shops', shop.id, 'products');
         
-        await addDoc(productsRef, newProduct).catch((error) => {
+        await addDoc(productsRef, newProductData).catch((error) => {
             const permissionError = new FirestorePermissionError({
                 path: productsRef.path,
                 operation: 'create',
-                requestResourceData: newProduct,
+                requestResourceData: newProductData,
             });
             errorEmitter.emit('permission-error', permissionError);
             throw error;
@@ -183,12 +191,14 @@ export default function ProductsPage() {
     setIsSubmitting(true);
     try {
       const productRef = doc(firestore, 'shops', shop.id, 'products', productToEdit.id);
+      
+      const updateData = data as Partial<Product>;
 
-      await updateDoc(productRef, data).catch((error) => {
+      await updateDoc(productRef, updateData).catch((error) => {
           const permissionError = new FirestorePermissionError({
               path: productRef.path,
               operation: 'update',
-              requestResourceData: data,
+              requestResourceData: updateData,
           });
           errorEmitter.emit('permission-error', permissionError);
           throw error;
@@ -329,7 +339,7 @@ export default function ProductsPage() {
         <CardContent>
           {products && products.length > 0 ? (
             <div className="space-y-4">
-              {(products as Product[]).map(product => (
+              {products.map(product => (
                 <div key={product.id} className="flex items-center gap-4 border p-4 rounded-lg">
                   <Image
                     src={product.imageUrl}

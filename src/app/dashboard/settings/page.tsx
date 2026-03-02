@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from 'react';
@@ -7,6 +8,7 @@ import type { Clinic } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EditClinicForm } from '@/components/edit-clinic-form';
 import { Loader2 } from 'lucide-react';
+import { mapToClinic } from '@/lib/type-mappers';
 
 export default function SettingsPage() {
     const firestore = useFirestore();
@@ -20,9 +22,11 @@ export default function SettingsPage() {
         );
     }, [firestore, user]);
 
-    const { data: clinics, loading: clinicsLoading } = useCollection(clinicsQuery);
+    const { data: clinicDocs, loading: clinicsLoading } = useCollection(clinicsQuery);
     
-    const clinic = clinics?.[0] as DocumentData as Clinic | undefined;
+    const clinic: Clinic | undefined = useMemo(() => {
+        return clinicDocs && clinicDocs.length > 0 ? mapToClinic(clinicDocs[0]) : undefined;
+    }, [clinicDocs]);
 
     return (
         <div className="space-y-8 max-w-2xl mx-auto">

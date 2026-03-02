@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useMemo, useState } from 'react';
-import { collection, query, where, orderBy, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { useMemo } from 'react';
+import { collection, query, where, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Appointment, Clinic } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,12 +14,7 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-
-
-// A type guard to check if a value is a Timestamp
-function isTimestamp(value: any): value is Timestamp {
-    return value && typeof value.toDate === 'function';
-}
+import { mapToClinic, mapToAppointment } from '@/lib/type-mappers';
 
 const statusIcons = {
     scheduled: <Circle className="h-4 w-4 text-blue-500" />,
@@ -47,9 +42,12 @@ export function AppointmentList() {
         );
     }, [firestore, user]);
 
-    const { data: clinics, loading: clinicsLoading } = useCollection(clinicsQuery);
+    const { data: clinicDocs, loading: clinicsLoading } = useCollection(clinicsQuery);
     
-    const clinic = clinics?.[0] as Clinic | undefined;
+    const clinic: Clinic | undefined = useMemo(() => {
+        return clinicDocs && clinicDocs.length > 0 ? mapToClinic(clinicDocs[0]) : undefined;
+    }, [clinicDocs]);
+    
     const clinicId = clinic?.id;
 
     const appointmentsQuery = useMemo(() => {
@@ -61,19 +59,12 @@ export function AppointmentList() {
         );
     }, [firestore, clinicId]);
 
-    const { data: appointments, loading: appointmentsLoading } = useCollection(appointmentsQuery);
+    const { data: appointmentDocs, loading: appointmentsLoading } = useCollection(appointmentsQuery);
     
-    const processedAppointments = useMemo(() => {
-        if (!appointments) return [];
-        return appointments.map(appt => {
-            const apptData = appt as any;
-            return {
-                ...apptData,
-                appointmentDate: isTimestamp(apptData.appointmentDate) ? apptData.appointmentDate.toDate() : new Date(),
-                createdAt: isTimestamp(apptData.createdAt) ? apptData.createdAt.toDate() : new Date(),
-            } as Appointment;
-        }).sort((a, b) => b.appointmentDate.getTime() - a.appointmentDate.getTime());
-    }, [appointments]);
+    const appointments: Appointment[] = useMemo(() => {
+        if (!appointmentDocs) return [];
+        return appointmentDocs.map(mapToAppointment).sort((a, b) => b.appointmentDate.getTime() - a.appointmentDate.getTime());
+    }, [appointmentDocs]);
 
     const handleStatusChange = (appointmentId: string, status: Appointment['status']) => {
         if (!firestore) return;
@@ -113,7 +104,7 @@ export function AppointmentList() {
         return <p className="text-center text-muted-foreground py-8">You haven't set up a clinic yet.</p>;
     }
 
-    if (processedAppointments.length === 0) {
+    if (appointments.length === 0) {
         return <p className="text-center text-muted-foreground py-8">You have no appointments yet.</p>;
     }
 
@@ -129,7 +120,7 @@ export function AppointmentList() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {processedAppointments.map((appt) => (
+                {appointments.map((appt) => (
                     <TableRow key={appt.id}>
                         <TableCell className="font-medium">{appt.patientName}</TableCell>
                         <TableCell>{format(appt.appointmentDate, "PPP p")}</TableCell>

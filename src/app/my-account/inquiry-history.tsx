@@ -1,7 +1,8 @@
+
 "use client";
 
-import { useMemo, useState, useEffect } from 'react';
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import type { ShopInquiry } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,11 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, MessageCircle, Mail } from "lucide-react";
 import { format } from 'date-fns';
 import Link from 'next/link';
-
-// A type guard to check if a value is a Timestamp
-function isTimestamp(value: any): value is Timestamp {
-    return value && typeof value.toDate === 'function';
-}
 
 interface InquiryHistoryProps {
     inquiries: ShopInquiry[] | null;
@@ -59,16 +55,6 @@ export function InquiryHistory({ inquiries, loading }: InquiryHistoryProps) {
         fetchShopNames();
     }, [inquiries, firestore]);
 
-    const processedInquiries = useMemo(() => {
-        if (!inquiries) return [];
-        return inquiries.map(inq => {
-            const inqData = inq as any;
-            return {
-                ...inqData,
-                createdAt: isTimestamp(inqData.createdAt) ? inqData.createdAt.toDate() : new Date(),
-            } as ShopInquiry;
-        }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    }, [inquiries]);
 
     if (loading || shopsLoading) {
         return (
@@ -79,7 +65,7 @@ export function InquiryHistory({ inquiries, loading }: InquiryHistoryProps) {
         );
     }
     
-    if (processedInquiries.length === 0) {
+    if (!inquiries || inquiries.length === 0) {
         return <p className="text-center text-muted-foreground py-8">You have not sent any inquiries yet.</p>;
     }
 
@@ -94,7 +80,7 @@ export function InquiryHistory({ inquiries, loading }: InquiryHistoryProps) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {processedInquiries.map((inq) => (
+                {inquiries.map((inq) => (
                     <TableRow key={inq.id}>
                         <TableCell className="font-medium">
                             <Link href={`/shops/${inq.shopId}`} className="hover:underline text-primary">

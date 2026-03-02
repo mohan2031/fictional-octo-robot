@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useMemo, useState, useEffect } from 'react';
-import { collection, query, where, doc, updateDoc, Timestamp, getDocs } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { collection, query, where, doc, updateDoc, getDocs } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
-import type { Appointment, Clinic } from '@/lib/types';
+import type { Appointment } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,11 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import Link from 'next/link';
-
-// A type guard to check if a value is a Timestamp
-function isTimestamp(value: any): value is Timestamp {
-    return value && typeof value.toDate === 'function';
-}
 
 const statusIcons = {
     scheduled: <Circle className="h-4 w-4 text-blue-500" />,
@@ -78,18 +73,6 @@ export function AppointmentHistory({ appointments, loading }: AppointmentHistory
         fetchClinicNames();
     }, [appointments, firestore]);
 
-    const processedAppointments = useMemo(() => {
-        if (!appointments) return [];
-        return appointments.map(appt => {
-            const apptData = appt as any;
-            return {
-                ...apptData,
-                appointmentDate: isTimestamp(apptData.appointmentDate) ? apptData.appointmentDate.toDate() : new Date(),
-                createdAt: isTimestamp(apptData.createdAt) ? apptData.createdAt.toDate() : new Date(),
-            } as Appointment;
-        }).sort((a, b) => b.appointmentDate.getTime() - a.appointmentDate.getTime());
-    }, [appointments]);
-
     const handleCancelAppointment = (appointmentId: string) => {
         if (!firestore) return;
 
@@ -123,7 +106,7 @@ export function AppointmentHistory({ appointments, loading }: AppointmentHistory
         );
     }
     
-    if (processedAppointments.length === 0) {
+    if (!appointments || appointments.length === 0) {
         return <p className="text-center text-muted-foreground py-8">You have no appointments yet.</p>;
     }
 
@@ -139,7 +122,7 @@ export function AppointmentHistory({ appointments, loading }: AppointmentHistory
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {processedAppointments.map((appt) => (
+                {appointments.map((appt) => (
                     <TableRow key={appt.id}>
                         <TableCell className="font-medium">
                             <Link href={`/clinics/${appt.clinicId}`} className="hover:underline text-primary">
