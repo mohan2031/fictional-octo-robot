@@ -11,7 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { subDays, format, startOfDay, isSameDay } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { mapToShop, mapToShopInquiry } from '@/lib/type-mappers';
+import { mapToShop, mapToShopInquiry, mapToProduct } from '@/lib/type-mappers';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) {
@@ -53,7 +53,7 @@ export function DashboardStats() {
         return query(collection(firestore, "shops", shopId, "products"));
     }, [firestore, shopId]);
 
-    const { data: products, loading: productsLoading } = useCollection(productsQuery);
+    const { data: productDocs, loading: productsLoading } = useCollection(productsQuery);
 
     const inquiriesQuery = useMemo(() => {
         if (!firestore || !shopId) return null;
@@ -70,6 +70,11 @@ export function DashboardStats() {
         return inquiryDocs.map(mapToShopInquiry);
     }, [inquiryDocs]);
 
+    const processedProducts: Product[] = useMemo(() => {
+        if (!productDocs) return [];
+        return productDocs.map(mapToProduct);
+    }, [productDocs]);
+
     const inquiryStats = useMemo(() => {
         const totalInquiries = processedInquiries.length;
         const unreadInquiries = processedInquiries.filter(inq => !inq.isRead).length;
@@ -85,6 +90,18 @@ export function DashboardStats() {
         return { totalInquiries, unreadInquiries, chartData };
     }, [processedInquiries]);
 
+    const productStats = useMemo(() => {
+        const today = startOfDay(new Date());
+        const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
+
+        const chartData = last7Days.map(day => ({
+            date: format(day, 'MMM d'),
+            products: processedProducts.filter(prod => isSameDay(prod.createdAt, day)).length,
+        }));
+        
+        return { chartData };
+    }, [processedProducts]);
+
 
     if (shopsLoading || inquiriesLoading || productsLoading) {
         return (
@@ -99,12 +116,16 @@ export function DashboardStats() {
         return <p className="text-center text-muted-foreground py-8">You haven't set up a shop yet. Please sign up to create one.</p>;
     }
 
-    const totalProducts = products?.length || 0;
+    const totalProducts = processedProducts.length;
     
     const chartConfig = {
       inquiries: {
         label: "Inquiries",
         color: "hsl(var(--chart-1))",
+      },
+      products: {
+        label: "Products",
+        color: "hsl(var(--chart-2))",
       },
     } satisfies ChartConfig;
 
@@ -117,31 +138,58 @@ export function DashboardStats() {
                 <StatCard title="Unread Messages" value={inquiryStats.unreadInquiries} icon={MessageSquareWarning} />
             </div>
 
-             <Card className="mt-8">
-                <CardHeader>
-                    <CardTitle>Recent Messages</CardTitle>
-                    <CardDescription>Messages received over the last 7 days.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                        <BarChart accessibilityLayer data={inquiryStats.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                tickMargin={10}
-                                axisLine={false}
-                            />
-                            <YAxis allowDecimals={false} />
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent />}
-                            />
-                            <Bar dataKey="inquiries" fill="var(--color-inquiries)" radius={8} />
-                        </BarChart>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
+            <div className="grid lg:grid-cols-2 gap-8 mt-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Messages</CardTitle>
+                        <CardDescription>Messages received over the last 7 days.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                            <BarChart accessibilityLayer data={inquiryStats.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                />
+                                <YAxis allowDecimals={false} />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent />}
+                                />
+                                <Bar dataKey="inquiries" fill="var(--color-inquiries)" radius={8} />
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Products Added</CardTitle>
+                        <CardDescription>New products added over the last 7 days.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                            <BarChart accessibilityLayer data={productStats.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                />
+                                <YAxis allowDecimals={false} />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent />}
+                                />
+                                <Bar dataKey="products" fill="var(--color-products)" radius={8} />
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
 
             <Card className="mt-8">
                 <CardHeader>

@@ -54,6 +54,7 @@ export function mapToInquiry(doc: DocumentData): Inquiry {
   return {
     id: doc.id,
     clinicId: doc.clinicId || '',
+    userId: doc.userId,
     name: doc.name || 'No Name',
     contact: doc.contact || 'No contact',
     message: doc.message || '',
@@ -71,6 +72,7 @@ export function mapToProduct(doc: DocumentData): Product {
         isAvailable: doc.isAvailable === true,
         imageUrl: doc.imageUrl || placeholder.imageUrl,
         imageHint: doc.imageHint || placeholder.imageHint,
+        createdAt: isTimestamp(doc.createdAt) ? doc.createdAt.toDate() : new Date(),
     }
 }
 

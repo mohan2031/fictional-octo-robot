@@ -29,6 +29,7 @@ export interface Clinic {
 export interface Inquiry {
   id: string;
   clinicId: string;
+  userId?: string;
   name: string;
   contact: string;
   message: string;
@@ -43,6 +44,7 @@ export interface Product {
   isAvailable: boolean;
   imageUrl: string;
   imageHint: string;
+  createdAt: Date;
 }
 
 export interface Shop {

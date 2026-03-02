@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { collection, query, where, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Shop, Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -150,6 +150,7 @@ export default function ProductsPage() {
             id: uuidv4(), // isProduct rule expects id
             imageUrl: placeholder.imageUrl,
             imageHint: placeholder.imageHint,
+            createdAt: serverTimestamp(),
         };
 
         const productsRef = collection(firestore, 'shops', shop.id, 'products');
@@ -192,7 +193,7 @@ export default function ProductsPage() {
     try {
       const productRef = doc(firestore, 'shops', shop.id, 'products', productToEdit.id);
       
-      const updateData = data as Partial<Product>;
+      const updateData = { ...data } as Partial<Product>;
 
       await updateDoc(productRef, updateData).catch((error) => {
           const permissionError = new FirestorePermissionError({
