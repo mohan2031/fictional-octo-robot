@@ -8,6 +8,7 @@ import { Clock, Mail, MapPin, Phone, CheckCircle, XCircle, CalendarPlus } from "
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { InquiryForm } from "@/components/inquiry-form";
 import { AppointmentForm } from "@/components/appointment-form";
+import { ReviewSection } from "@/components/review-section";
 
 export default async function ClinicDetailPage({ params }: { params: { id: string } }) {
   const clinic = await getClinicById(params.id);
@@ -122,6 +123,9 @@ export default async function ClinicDetailPage({ params }: { params: { id: strin
               </CardContent>
             </Card>
           </div>
+        </div>
+        <div className="mt-12">
+          <ReviewSection businessId={clinic.id} businessType="clinic" />
         </div>
       </div>
     </>

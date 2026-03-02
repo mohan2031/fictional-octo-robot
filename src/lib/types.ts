@@ -81,3 +81,14 @@ export interface UserProfile {
   role: 'customer' | 'owner';
   createdAt: Date;
 }
+
+export interface Review {
+  id: string;
+  businessId: string;
+  businessType: 'clinic' | 'shop';
+  userId: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+}

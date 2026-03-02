@@ -8,6 +8,7 @@ import { Clock, Mail, MapPin, Phone, CheckCircle, XCircle, ShoppingBag } from "l
 import { ProductCard } from "@/components/product-card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ShopInquiryForm } from "@/components/shop-inquiry-form";
+import { ReviewSection } from "@/components/review-section";
 
 export default async function ShopDetailPage({ params }: { params: { id: string } }) {
   const shop = await getShopById(params.id);
@@ -120,6 +121,9 @@ export default async function ShopDetailPage({ params }: { params: { id: string 
               </CardContent>
             </Card>
           </div>
+        </div>
+        <div className="mt-12">
+          <ReviewSection businessId={shop.id} businessType="shop" />
         </div>
       </div>
     </>

@@ -50,5 +50,14 @@ service cloud.firestore {
       // A user can create their own profile, and can only read/write their own data.
       allow create, read, update: if request.auth.uid == userId;
     }
+
+    match /reviews/{reviewId} {
+      // Anyone can read reviews
+      allow read: if true;
+      // An authenticated user can create a review if they are the author
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // The author can update or delete their own review
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
   }
 }
