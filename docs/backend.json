@@ -98,11 +98,7 @@
             "isOpen": { "type": "boolean" },
             "imageUrl": { "type": "string", "format": "uri" },
             "imageHint": { "type": "string" },
-            "createdAt": { "type": "string", "format": "date-time" },
-            "products": {
-                "type": "array",
-                "items": { "$ref": "#/backend/entities/product" }
-            }
+            "createdAt": { "type": "string", "format": "date-time" }
         }
     },
     "shopInquiry": {
@@ -209,6 +205,10 @@
     "/shops/{shopId}": {
       "schema": { "$ref": "#/backend/entities/shop" },
       "description": "Stores information about each shop."
+    },
+    "/shops/{shopId}/products/{productId}": {
+        "schema": { "$ref": "#/backend/entities/product" },
+        "description": "Subcollection for products within a shop."
     },
     "/shop-inquiries/{inquiryId}": {
         "schema": { "$ref": "#/backend/entities/shopInquiry" },

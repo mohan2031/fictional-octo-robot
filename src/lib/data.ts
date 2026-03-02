@@ -1,6 +1,6 @@
-import type { Clinic, Shop } from './types';
+import type { Clinic, Shop, Product } from './types';
 import { db } from '@/firebase/server';
-import { doc, getDoc, DocumentData, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, DocumentData, Timestamp, collection, getDocs } from 'firebase/firestore';
 import { getPlaceholderImage } from './placeholder-images';
 
 const mapDocToClinic = (document: DocumentData): Clinic => {
@@ -40,7 +40,7 @@ export const getClinicById = async (id: string): Promise<Clinic | null> => {
 };
 
 
-const mapDocToShop = (document: DocumentData): Shop => {
+const mapDocToShop = (document: DocumentData): Omit<Shop, 'products'> => {
     const data = document.data();
     const placeholder = getPlaceholderImage(data.category || 'shop');
     return {
@@ -58,7 +58,6 @@ const mapDocToShop = (document: DocumentData): Shop => {
       imageHint: data.imageHint || placeholder.imageHint,
       ownerId: data.ownerId || '',
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
-      products: data.products || [],
     };
   };
 
@@ -72,6 +71,15 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
   if (!shopSnap.exists()) {
     return null;
   }
+
+  const shopData = mapDocToShop(shopSnap);
+
+  const productsRef = collection(db, 'shops', id, 'products');
+  const productsSnap = await getDocs(productsRef);
+  const products = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
   
-  return mapDocToShop(shopSnap);
+  return {
+    ...shopData,
+    products,
+  };
 };

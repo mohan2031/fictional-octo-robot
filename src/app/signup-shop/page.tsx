@@ -98,7 +98,6 @@ export default function SignupShopPage() {
         lat: 20.5937,
         lng: 78.9629,
         phone: data.phone,
-        products: [],
         createdAt: serverTimestamp(),
       };
       

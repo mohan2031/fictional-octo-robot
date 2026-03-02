@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import { collection, query, where } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
-import type { Shop, ShopInquiry } from '@/lib/types';
+import type { Shop, ShopInquiry, Product } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Inbox, MessageSquareWarning, Package } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
@@ -45,6 +45,13 @@ export function DashboardStats() {
     const shop = shops?.[0] as Shop | undefined;
     const shopId = shop?.id;
 
+    const productsQuery = useMemo(() => {
+        if (!firestore || !shopId) return null;
+        return query(collection(firestore, "shops", shopId, "products"));
+    }, [firestore, shopId]);
+
+    const { data: products, loading: productsLoading } = useCollection(productsQuery);
+
     const inquiriesQuery = useMemo(() => {
         if (!firestore || !shopId) return null;
         return query(
@@ -82,7 +89,7 @@ export function DashboardStats() {
     }, [processedInquiries]);
 
 
-    if (shopsLoading || inquiriesLoading) {
+    if (shopsLoading || inquiriesLoading || productsLoading) {
         return (
             <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -95,7 +102,7 @@ export function DashboardStats() {
         return <p className="text-center text-muted-foreground py-8">You haven't set up a shop yet. Please sign up to create one.</p>;
     }
 
-    const totalProducts = shop.products?.length || 0;
+    const totalProducts = products?.length || 0;
     
     const chartConfig = {
       inquiries: {

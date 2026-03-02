@@ -36,17 +36,13 @@ service cloud.firestore {
           );
     }
 
-    function isProduct(p) {
-        return p.id is string
-            && p.name is string && p.name.size() > 1
-            && p.description is string && p.description.size() > 9
-            && p.isAvailable is bool
-            && p.imageUrl is string
-            && p.imageHint is string;
-    }
-
-    function areValidProducts(products) {
-        return products.size() >= 0 && products.all(p, isProduct(p));
+    function isProduct(data) {
+        return data.id is string
+            && data.name is string && data.name.size() > 1
+            && data.description is string && data.description.size() > 9
+            && data.isAvailable is bool
+            && data.imageUrl is string
+            && data.imageHint is string;
     }
 
     function isShop(data) {
@@ -65,8 +61,7 @@ service cloud.firestore {
           && (
             (request.method == 'create' && data.createdAt == request.time) ||
             (request.method == 'update' && data.createdAt is timestamp)
-          )
-          && data.products is list && areValidProducts(data.products);
+          );
     }
     
     function isAppointment(data) {
@@ -161,11 +156,22 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth.uid != null 
                     && request.auth.uid == request.resource.data.ownerId
-                    && isShop(request.resource.data)
-                    && request.resource.data.products.size() == 0;
+                    && isShop(request.resource.data);
       allow update: if request.auth.uid != null 
                     && request.auth.uid == resource.data.ownerId
                     && isShop(request.resource.data);
+
+      match /products/{productId} {
+        allow read: if true;
+        allow create: if request.auth.uid != null
+                      && get(/databases/$(database)/documents/shops/$(shopId)).data.ownerId == request.auth.uid
+                      && isProduct(request.resource.data);
+        allow update: if request.auth.uid != null
+                      && get(/databases/$(database)/documents/shops/$(shopId)).data.ownerId == request.auth.uid
+                      && isProduct(request.resource.data);
+        allow delete: if request.auth.uid != null
+                      && get(/databases/$(database)/documents/shops/$(shopId)).data.ownerId == request.auth.uid;
+      }
     }
 
     match /shop-inquiries/{inquiryId} {

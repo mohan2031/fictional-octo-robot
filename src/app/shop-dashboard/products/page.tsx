@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { collection, query, where, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Shop, Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { Input } from '@/components/ui/input';
@@ -93,8 +92,15 @@ export default function ProductsPage() {
     return query(collection(firestore, 'shops'), where('ownerId', '==', user.uid));
   }, [firestore, user]);
 
-  const { data: shops, loading: shopsLoading, setData: setShops } = useCollection(shopsQuery);
+  const { data: shops, loading: shopsLoading } = useCollection(shopsQuery);
   const shop = shops?.[0] as Shop | undefined;
+
+  const productsQuery = useMemo(() => {
+    if (!firestore || !shop) return null;
+    return query(collection(firestore, 'shops', shop.id, 'products'));
+  }, [firestore, shop]);
+  
+  const { data: products, loading: productsLoading } = useCollection(productsQuery);
 
   const handleGenerateDescription = async (form: typeof addForm | typeof editForm) => {
     const productName = form.getValues('name');
@@ -131,22 +137,20 @@ export default function ProductsPage() {
     setIsSubmitting(true);
     try {
         const placeholder = getPlaceholderImage(data.name);
-        const newProduct: Product = {
+        const newProduct: Omit<Product, 'id'> = {
             ...data,
-            id: uuidv4(),
+            id: uuidv4(), // isProduct rule expects id
             imageUrl: placeholder.imageUrl,
             imageHint: placeholder.imageHint,
         };
 
-        const shopRef = doc(firestore, 'shops', shop.id);
+        const productsRef = collection(firestore, 'shops', shop.id, 'products');
         
-        await updateDoc(shopRef, {
-            products: arrayUnion(newProduct)
-        }).catch((error) => {
+        await addDoc(productsRef, newProduct).catch((error) => {
             const permissionError = new FirestorePermissionError({
-                path: shopRef.path,
-                operation: 'update',
-                requestResourceData: { products: [newProduct] },
+                path: productsRef.path,
+                operation: 'create',
+                requestResourceData: newProduct,
             });
             errorEmitter.emit('permission-error', permissionError);
             throw error;
@@ -178,13 +182,17 @@ export default function ProductsPage() {
     }
     setIsSubmitting(true);
     try {
-      const shopRef = doc(firestore, 'shops', shop.id);
-      
-      const updatedProducts = shop.products.map(p =>
-        p.id === productToEdit.id ? { ...p, ...data } : p
-      );
+      const productRef = doc(firestore, 'shops', shop.id, 'products', productToEdit.id);
 
-      await updateDoc(shopRef, { products: updatedProducts });
+      await updateDoc(productRef, data).catch((error) => {
+          const permissionError = new FirestorePermissionError({
+              path: productRef.path,
+              operation: 'update',
+              requestResourceData: data,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw error;
+      });
 
       toast({
         title: 'Product Updated!',
@@ -192,13 +200,13 @@ export default function ProductsPage() {
       });
       setProductToEdit(null);
     } catch (error: any) {
-      console.error("Error updating product:", error);
-      const permissionError = new FirestorePermissionError({
-          path: doc(firestore, 'shops', shop.id).path,
-          operation: 'update',
-          requestResourceData: { products: "..." },
-      });
-      errorEmitter.emit('permission-error', permissionError);
+      if (!(error instanceof FirestorePermissionError)) {
+        toast({
+            title: "Error Updating Product",
+            description: error.message || "An unexpected error occurred.",
+            variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -211,11 +219,16 @@ export default function ProductsPage() {
     }
     setIsSubmitting(true);
     try {
-      const shopRef = doc(firestore, 'shops', shop.id);
+      const productRef = doc(firestore, 'shops', shop.id, 'products', productToDelete.id);
       
-      const updatedProducts = shop.products.filter(p => p.id !== productToDelete.id);
-
-      await updateDoc(shopRef, { products: updatedProducts });
+      await deleteDoc(productRef).catch((error) => {
+          const permissionError = new FirestorePermissionError({
+              path: productRef.path,
+              operation: 'delete',
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw error;
+      });
 
       toast({
         title: 'Product Deleted!',
@@ -223,20 +236,20 @@ export default function ProductsPage() {
       });
       setProductToDelete(null);
     } catch (error: any) {
-      console.error("Error deleting product:", error);
-      const permissionError = new FirestorePermissionError({
-          path: doc(firestore, 'shops', shop.id).path,
-          operation: 'update',
-          requestResourceData: { products: "..." },
-      });
-      errorEmitter.emit('permission-error', permissionError);
+      if (!(error instanceof FirestorePermissionError)) {
+        toast({
+            title: "Error Deleting Product",
+            description: error.message || "An unexpected error occurred.",
+            variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
 
-  if (shopsLoading) {
+  if (shopsLoading || productsLoading) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
@@ -314,9 +327,9 @@ export default function ProductsPage() {
           <CardDescription>A list of all products currently in your shop.</CardDescription>
         </CardHeader>
         <CardContent>
-          {shop.products && shop.products.length > 0 ? (
+          {products && products.length > 0 ? (
             <div className="space-y-4">
-              {shop.products.map(product => (
+              {(products as Product[]).map(product => (
                 <div key={product.id} className="flex items-center gap-4 border p-4 rounded-lg">
                   <Image
                     src={product.imageUrl}
