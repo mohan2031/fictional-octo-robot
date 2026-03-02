@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { mapToAppointment, mapToShopInquiry, mapToUserProfile, mapToInquiry, mapToReview } from '@/lib/type-mappers';
 import { ClinicInquiryHistory } from './clinic-inquiry-history';
 import { ReviewHistory } from './review-history';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function MyAccountPage() {
   const firestore = useFirestore();
@@ -102,79 +103,99 @@ export default function MyAccountPage() {
             </p>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Settings</CardTitle>
-              <CardDescription>Update your personal information.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {userProfileLoading ? (
-                <div className="space-y-4">
-                  <div className="flex flex-col space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                   <Skeleton className="h-10 w-32 ml-auto" />
-                </div>
-              ) : userProfile ? (
-                <EditProfileForm profile={userProfile} />
-              ) : (
-                <p>Could not load your profile information.</p>
-              )}
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mb-6">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="appointments">Appointments</TabsTrigger>
+              <TabsTrigger value="clinic-inquiries">Clinic Messages</TabsTrigger>
+              <TabsTrigger value="shop-inquiries">Shop Messages</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            </TabsList>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>My Appointments</CardTitle>
-              <CardDescription>Here is a list of your past and upcoming appointments.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AppointmentHistory
-                appointments={appointments}
-                loading={appointmentsLoading}
-              />
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>My Clinic Inquiries</CardTitle>
-              <CardDescription>Here is a list of your recent messages to local clinics.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ClinicInquiryHistory
-                inquiries={clinicInquiries}
-                loading={clinicInquiriesLoading}
-              />
-            </CardContent>
-          </Card>
+            <TabsContent value="profile">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Profile Settings</CardTitle>
+                  <CardDescription>Update your personal information.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {userProfileLoading ? (
+                    <div className="space-y-4">
+                      <div className="flex flex-col space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                      <Skeleton className="h-10 w-32 ml-auto" />
+                    </div>
+                  ) : userProfile ? (
+                    <EditProfileForm profile={userProfile} />
+                  ) : (
+                    <p>Could not load your profile information.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>My Shop Inquiries</CardTitle>
-              <CardDescription>Here is a list of your recent messages to local shops.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <InquiryHistory
-                inquiries={inquiries}
-                loading={inquiriesLoading}
-              />
-            </CardContent>
-          </Card>
+            <TabsContent value="appointments">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Appointments</CardTitle>
+                  <CardDescription>Here is a list of your past and upcoming appointments.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AppointmentHistory
+                    appointments={appointments}
+                    loading={appointmentsLoading}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="clinic-inquiries">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Clinic Inquiries</CardTitle>
+                  <CardDescription>Here is a list of your recent messages to local clinics.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ClinicInquiryHistory
+                    inquiries={clinicInquiries}
+                    loading={clinicInquiriesLoading}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>My Reviews</CardTitle>
-              <CardDescription>Here is a list of reviews you have submitted.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ReviewHistory
-                reviews={reviews}
-                loading={reviewsLoading}
-              />
-            </CardContent>
-          </Card>
+            <TabsContent value="shop-inquiries">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Shop Inquiries</CardTitle>
+                  <CardDescription>Here is a list of your recent messages to local shops.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <InquiryHistory
+                    inquiries={inquiries}
+                    loading={inquiriesLoading}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="reviews">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Reviews</CardTitle>
+                  <CardDescription>Here is a list of reviews you have submitted.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ReviewHistory
+                    reviews={reviews}
+                    loading={reviewsLoading}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </AuthGuard>
