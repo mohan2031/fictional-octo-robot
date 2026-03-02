@@ -6,13 +6,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -23,6 +24,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,12 +36,30 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
+      // Check user's role/ownership to redirect appropriately
+      const clinicQuery = query(collection(firestore, 'clinics'), where('ownerId', '==', user.uid));
+      const shopQuery = query(collection(firestore, 'shops'), where('ownerId', '==', user.uid));
+
+      const [clinicSnap, shopSnap] = await Promise.all([
+          getDocs(clinicQuery),
+          getDocs(shopQuery)
+      ]);
+
+      let redirectPath = '/my-account'; // Default for customers
+      if (!clinicSnap.empty) {
+          redirectPath = '/dashboard'; // Clinic owner
+      } else if (!shopSnap.empty) {
+          redirectPath = '/shop-dashboard'; // Shop owner
+      }
+
       toast({
         title: "Success",
         description: "Logged in successfully.",
       });
-      // Redirect to a generic dashboard/account page, the header will handle the correct final destination
-      router.push('/my-account'); 
+      
+      router.push(redirectPath);
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -56,7 +76,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Login to Your Account</CardTitle>
-          <CardDescription>Access your account or business dashboard.</CardDescription>
+          <CardDescription>Access your dashboard or manage your account.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
