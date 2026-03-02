@@ -30,7 +30,7 @@ function StatCard({ title, value, icon: Icon }: { title: string, value: string |
 
 export function DashboardStats() {
     const firestore = useFirestore();
-    const { user } = useUser();
+    const { user, loading: userLoading } = useUser();
 
     const clinicsQuery = useMemo(() => {
         if (!firestore || !user) return null;
@@ -106,7 +106,7 @@ export function DashboardStats() {
     }, [processedAppointments]);
 
 
-    if (clinicsLoading || inquiriesLoading || appointmentsLoading) {
+    if (clinicsLoading || inquiriesLoading || appointmentsLoading || userLoading) {
         return (
             <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
