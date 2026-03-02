@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ReviewForm } from './review-form';
 import { Separator } from './ui/separator';
 import { mapToReview } from '@/lib/type-mappers';
+import { Progress } from '@/components/ui/progress';
 
 function ReviewCard({ review }: { review: Review }) {
     return (
@@ -66,16 +67,30 @@ export function ReviewSection({ businessId, businessType }: ReviewSectionProps) 
     return reviewDocs.map(mapToReview);
   }, [reviewDocs]);
   
-  const { averageRating, totalReviews } = useMemo(() => {
+  const { averageRating, totalReviews, ratingDistribution } = useMemo(() => {
     if (!processedReviews || processedReviews.length === 0) {
-      return { averageRating: 0, totalReviews: 0 };
+      return { 
+          averageRating: 0, 
+          totalReviews: 0, 
+          ratingDistribution: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 } 
+      };
     }
     const total = processedReviews.reduce((acc, review) => acc + review.rating, 0);
+    const distribution = processedReviews.reduce((acc, review) => {
+        const rating = Math.floor(review.rating);
+        if (rating >= 1 && rating <= 5) {
+            acc[rating as keyof typeof acc] = (acc[rating as keyof typeof acc] || 0) + 1;
+        }
+        return acc;
+    }, { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 });
+    
     return {
       averageRating: total / processedReviews.length,
       totalReviews: processedReviews.length,
+      ratingDistribution: distribution
     };
   }, [processedReviews]);
+
 
   const hasUserReviewed = useMemo(() => {
     if (!user || !processedReviews) return false;
@@ -86,19 +101,30 @@ export function ReviewSection({ businessId, businessType }: ReviewSectionProps) 
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div className="space-y-1">
                 <CardTitle className="text-2xl font-bold flex items-center gap-2">
                     <Star className="h-6 w-6 text-primary"/>
                     Ratings & Reviews
                 </CardTitle>
-                <CardDescription>See what other people are saying.</CardDescription>
+                <CardDescription>See what other people are saying. {totalReviews > 0 && `Based on ${totalReviews} reviews.`}</CardDescription>
             </div>
             {totalReviews > 0 && (
-                 <div className="flex items-center gap-2 bg-muted p-2 rounded-lg">
-                    <ReviewStars rating={averageRating} size={20} showText={false} />
-                    <p className="font-bold text-lg">{averageRating.toFixed(1)}</p>
-                    <p className="text-sm text-muted-foreground">({totalReviews} reviews)</p>
+                 <div className="flex gap-4 sm:gap-6 items-center bg-muted/50 p-4 rounded-lg border w-full max-w-sm">
+                    <div className="flex flex-col items-center justify-center shrink-0 text-center">
+                        <p className="text-4xl font-bold">{averageRating.toFixed(1)}</p>
+                        <ReviewStars rating={averageRating} size={16} showText={false} />
+                        <p className="text-xs text-muted-foreground mt-1">out of 5</p>
+                    </div>
+                    <div className="flex-grow space-y-1">
+                        {Object.entries(ratingDistribution).map(([rating, count]) => (
+                            <div key={rating} className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-muted-foreground w-6">{rating} <span className="sr-only">star</span></span>
+                                <Progress value={(count / totalReviews) * 100} className="w-full h-2" />
+                                <span className="text-xs font-bold text-muted-foreground w-8 text-right">{count}</span>
+                            </div>
+                        )).reverse()}
+                    </div>
                 </div>
             )}
         </div>
@@ -139,3 +165,4 @@ export function ReviewSection({ businessId, businessType }: ReviewSectionProps) 
     </Card>
   );
 }
+
