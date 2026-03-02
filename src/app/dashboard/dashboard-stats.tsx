@@ -100,7 +100,7 @@ export function DashboardStats() {
 
         const chartData = last7Days.map(day => ({
             date: format(day, 'MMM d'),
-            appointments: processedAppointments.filter(appt => isSameDay(appt.appointmentDate, day)).length,
+            appointments: processedAppointments.filter(appt => isSameDay(appt.createdAt, day)).length,
         }));
         
         return { totalAppointments, chartData };
@@ -169,7 +169,7 @@ export function DashboardStats() {
                  <Card>
                     <CardHeader>
                         <CardTitle>Recent Appointments</CardTitle>
-                        <CardDescription>Appointments scheduled over the last 7 days.</CardDescription>
+                        <CardDescription>Appointments booked over the last 7 days.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ChartContainer config={chartConfig} className="h-[250px] w-full">
