@@ -1,12 +1,12 @@
-// This is a placeholder for your Firebase configuration.
-// Go to your Firebase project console, navigate to Project Settings,
-// and copy the config object here.
-// https://firebase.google.com/docs/web/setup#add-sdk-and-initialize
+// This config is populated by environment variables.
+// For local development, create a .env file in the root of your project
+// and add the keys from your Firebase project's web app config.
+// For production, these are set in your hosting environment.
 export const firebaseConfig = {
-  apiKey: "AIzaSyBlAPB0ew_EGLbJCM0nqrbUy-vmRspEZP8",
-  authDomain: "studio-1122720629-5b262.firebaseapp.com",
-  projectId: "studio-1122720629-5b262",
-  storageBucket: "studio-1122720629-5b262.appspot.com",
-  messagingSenderId: "930950296441",
-  appId: "1:930950296441:web:e2e8b208679960c32ab5a8"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
