@@ -25,6 +25,15 @@ const mapDocToClinic = (document: DocumentData): Clinic => {
     };
   };
 
+export const getAllClinics = async (): Promise<Clinic[]> => {
+    const clinicsRef = collection(db, 'clinics');
+    const clinicsSnap = await getDocs(clinicsRef);
+    if (clinicsSnap.empty) {
+        return [];
+    }
+    return clinicsSnap.docs.map(mapDocToClinic);
+};
+
 export const getClinicById = async (id: string): Promise<Clinic | null> => {
   if (!id) {
     return null;
@@ -60,6 +69,17 @@ const mapDocToShop = (document: DocumentData): Omit<Shop, 'products'> => {
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
     };
   };
+
+export const getAllShops = async (): Promise<Shop[]> => {
+    const shopsRef = collection(db, 'shops');
+    const shopsSnap = await getDocs(shopsRef);
+    if (shopsSnap.empty) {
+        return [];
+    }
+    // The component expects a Shop[], but we don't need products for the list view.
+    // Since products is optional, we can just return the mapped docs.
+    return shopsSnap.docs.map(mapDocToShop);
+};
 
 export const getShopById = async (id: string): Promise<Shop | null> => {
   if (!id) {

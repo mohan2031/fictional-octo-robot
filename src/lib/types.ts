@@ -60,7 +60,7 @@ export interface Shop {
   imageHint: string;
   ownerId: string;
   createdAt?: Date;
-  products: Product[];
+  products?: Product[];
 }
 
 export interface ShopInquiry {
