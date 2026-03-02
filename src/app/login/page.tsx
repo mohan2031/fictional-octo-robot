@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -46,18 +47,28 @@ export default function LoginPage() {
           getDocs(clinicQuery),
           getDocs(shopQuery)
       ]);
+      
+      const hasClinic = !clinicSnap.empty;
+      const hasShop = !shopSnap.empty;
 
       let redirectPath = '/my-account'; // Default for customers
-      if (!clinicSnap.empty) {
+      if (hasClinic) {
           redirectPath = '/dashboard'; // Clinic owner
-      } else if (!shopSnap.empty) {
+      } else if (hasShop) {
           redirectPath = '/shop-dashboard'; // Shop owner
       }
 
-      toast({
-        title: "Success",
-        description: "Logged in successfully.",
-      });
+      if (hasClinic && hasShop) {
+        toast({
+          title: "Welcome Back!",
+          description: "Redirecting to your clinic dashboard. Access your shop dashboard from the account menu.",
+        });
+      } else {
+        toast({
+            title: "Success",
+            description: "Logged in successfully.",
+        });
+      }
       
       router.push(redirectPath);
     } catch (error: any) {
