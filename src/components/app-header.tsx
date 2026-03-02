@@ -14,6 +14,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -82,44 +83,53 @@ export function AppHeader() {
             
             {isLoading && (
               <div className="flex items-center gap-2">
-                <Skeleton className="h-9 w-24" />
-                <Skeleton className="h-9 w-24" />
+                <Skeleton className="h-9 w-32" />
               </div>
             )}
             
             {!isLoading && (
               user ? (
-                <>
-                  {isBusinessOwner ? (
-                    <>
-                      {hasClinic && (
-                        <Button asChild>
-                          <Link href="/dashboard">Clinic Dashboard</Link>
-                        </Button>
-                      )}
-                      {hasShop && (
-                        <Button asChild>
-                          <Link href="/shop-dashboard">Shop Dashboard</Link>
-                        </Button>
-                      )}
-                    </>
-                  ) : (
-                     <Button asChild variant="outline">
-                        <Link href="/my-account">
-                          <UserIcon className="mr-2 h-4 w-4" />
-                          My Account
-                        </Link>
-                     </Button>
-                  )}
-                  <Button variant="outline" size="icon" onClick={handleSignOut} title="Sign Out">
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline">
-                      For Business
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      {user.displayName || 'My Account'}
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link href="/my-account">
+                        My Account
+                      </Link>
+                    </DropdownMenuItem>
+                    
+                    {isBusinessOwner && <DropdownMenuSeparator />}
+                    
+                    {hasClinic && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard">Clinic Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    {hasShop && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/shop-dashboard">Shop Dashboard</Link>
+                      </DropdownMenuItem>
+                    )}
+                    
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sign Out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button>
+                      Login / Register
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
