@@ -39,7 +39,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, PlusCircle, Sparkles, Trash2, FileEdit } from 'lucide-react';
 import Image from 'next/image';
 import { generateProductDescription } from '@/ai/flows/generate-product-description-flow';
-import { v4 as uuidv4 } from 'uuid';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { getPlaceholderImage } from '@/lib/placeholder-images';
@@ -147,7 +146,6 @@ export default function ProductsPage() {
         const placeholder = getPlaceholderImage(data.name);
         const newProductData = {
             ...data,
-            id: uuidv4(), // isProduct rule expects id
             imageUrl: placeholder.imageUrl,
             imageHint: placeholder.imageHint,
             createdAt: serverTimestamp(),

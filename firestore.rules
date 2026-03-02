@@ -37,8 +37,7 @@ service cloud.firestore {
     }
 
     function isProduct(data) {
-        return data.id is string
-            && data.name is string && data.name.size() > 1
+        return data.name is string && data.name.size() > 1
             && data.description is string && data.description.size() > 9
             && data.isAvailable is bool
             && data.imageUrl is string

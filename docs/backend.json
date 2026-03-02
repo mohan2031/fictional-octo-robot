@@ -77,7 +77,6 @@
       "description": "A product or service sold by a shop.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
         "name": { "type": "string" },
         "description": { "type": "string" },
         "isAvailable": { "type": "boolean" },
