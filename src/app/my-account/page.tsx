@@ -1,18 +1,18 @@
-
 'use client';
 
 import { useMemo } from 'react';
 import { collection, query, where, orderBy, doc } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
-import type { Appointment, ShopInquiry, UserProfile, Inquiry } from '@/lib/types';
+import type { Appointment, ShopInquiry, UserProfile, Inquiry, Review } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthGuard } from '../dashboard/auth-guard'; // Re-using the same auth guard
 import { AppointmentHistory } from './appointment-history';
 import { InquiryHistory } from './inquiry-history';
 import { EditProfileForm } from '@/components/edit-profile-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { mapToAppointment, mapToShopInquiry, mapToUserProfile, mapToInquiry } from '@/lib/type-mappers';
+import { mapToAppointment, mapToShopInquiry, mapToUserProfile, mapToInquiry, mapToReview } from '@/lib/type-mappers';
 import { ClinicInquiryHistory } from './clinic-inquiry-history';
+import { ReviewHistory } from './review-history';
 
 export default function MyAccountPage() {
   const firestore = useFirestore();
@@ -74,6 +74,21 @@ export default function MyAccountPage() {
     if (!clinicInquiryDocs) return null;
     return clinicInquiryDocs.map(mapToInquiry).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [clinicInquiryDocs]);
+
+  const reviewsQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'reviews'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+  }, [firestore, user]);
+
+  const { data: reviewDocs, loading: reviewsLoading } = useCollection(reviewsQuery);
+  const reviews: Review[] | null = useMemo(() => {
+    if (!reviewDocs) return null;
+    return reviewDocs.map(mapToReview).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }, [reviewDocs]);
 
 
   return (
@@ -144,6 +159,19 @@ export default function MyAccountPage() {
               <InquiryHistory
                 inquiries={inquiries}
                 loading={inquiriesLoading}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>My Reviews</CardTitle>
+              <CardDescription>Here is a list of reviews you have submitted.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ReviewHistory
+                reviews={reviews}
+                loading={reviewsLoading}
               />
             </CardContent>
           </Card>
