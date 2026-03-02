@@ -129,16 +129,20 @@ export function DashboardStats() {
       },
     } satisfies ChartConfig;
 
+    const displayName = user?.displayName || 'Shop Manager';
 
     return (
-        <div>
+        <div className="space-y-8">
+            <div className="flex flex-wrap gap-4 justify-between items-center">
+                <h2 className="text-3xl font-bold font-headline">Welcome back, {displayName}!</h2>
+            </div>
             <div className="grid gap-4 md:grid-cols-3">
                 <StatCard title="Total Products" value={totalProducts} icon={Package} />
                 <StatCard title="Total Messages" value={inquiryStats.totalInquiries} icon={Inbox} />
                 <StatCard title="Unread Messages" value={inquiryStats.unreadInquiries} icon={MessageSquareWarning} />
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8 mt-8">
+            <div className="grid lg:grid-cols-2 gap-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>Recent Messages</CardTitle>
@@ -191,7 +195,7 @@ export function DashboardStats() {
                 </Card>
             </div>
 
-            <Card className="mt-8">
+            <Card>
                 <CardHeader>
                     <CardTitle>Your Shop Profile</CardTitle>
                 </CardHeader>
