@@ -24,11 +24,6 @@ export function AppHeader() {
   const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -71,7 +66,7 @@ export function AppHeader() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold font-headline text-primary">
             <Briefcase className="h-6 w-6" />
-            <span>{isClient ? 'RuralReach' : 'RuralReach'}</span>
+            <span>RuralReach</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>

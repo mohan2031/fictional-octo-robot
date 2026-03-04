@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { collection, query, where } from 'firebase/firestore';
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import type { Clinic, Inquiry, Appointment } from '@/lib/types';
@@ -31,6 +31,11 @@ function StatCard({ title, value, icon: Icon }: { title: string, value: string |
 export function DashboardStats() {
     const firestore = useFirestore();
     const { user, loading: userLoading } = useUser();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const clinicsQuery = useMemo(() => {
         if (!firestore || !user) return null;
@@ -106,7 +111,7 @@ export function DashboardStats() {
     }, [processedAppointments]);
 
 
-    if (clinicsLoading || inquiriesLoading || appointmentsLoading || userLoading) {
+    if (userLoading || clinicsLoading || inquiriesLoading || appointmentsLoading) {
         return (
             <div className="flex items-center justify-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -136,7 +141,7 @@ export function DashboardStats() {
     return (
         <div className="space-y-8">
             <div className="flex flex-wrap gap-4 justify-between items-center">
-                <h2 className="text-3xl font-bold font-headline">Welcome back, {displayName}!</h2>
+                {isClient && <h2 className="text-3xl font-bold font-headline">Welcome back, {displayName}!</h2>}
             </div>
             <div className="grid gap-4 md:grid-cols-3">
                 <StatCard title="Total Appointments" value={appointmentStats.totalAppointments} icon={CalendarDays} />
