@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from 'react';
@@ -27,11 +28,30 @@ function StatCard({ title, value, icon: Icon }: { title: string, value: string |
     );
 }
 
+const initialInquiryStats = {
+    totalInquiries: 0,
+    unreadInquiries: 0,
+    chartData: Array.from({ length: 7 }, (_, i) => {
+        const day = subDays(new Date(), 6 - i);
+        return { date: format(day, 'MMM d'), inquiries: 0 };
+    }),
+};
+
+const initialProductStats = {
+    chartData: Array.from({ length: 7 }, (_, i) => {
+        const day = subDays(new Date(), 6 - i);
+        return { date: format(day, 'MMM d'), products: 0 };
+    }),
+};
 
 export function DashboardStats() {
     const firestore = useFirestore();
     const { user, loading: userLoading } = useUser();
     const [isClient, setIsClient] = useState(false);
+    
+    const [inquiryStats, setInquiryStats] = useState(initialInquiryStats);
+    const [productStats, setProductStats] = useState(initialProductStats);
+
 
     useEffect(() => {
         setIsClient(true);
@@ -78,34 +98,32 @@ export function DashboardStats() {
         if (!productDocs) return [];
         return productDocs.map(mapToProduct);
     }, [productDocs]);
-
-    const inquiryStats = useMemo(() => {
-        const totalInquiries = processedInquiries.length;
-        const unreadInquiries = processedInquiries.filter(inq => !inq.isRead).length;
-
+    
+    useEffect(() => {
         const today = startOfDay(new Date());
         const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
 
-        const chartData = last7Days.map(day => ({
+        const inquiryChartData = last7Days.map(day => ({
             date: format(day, 'MMM d'),
             inquiries: processedInquiries.filter(inq => isSameDay(inq.createdAt, day)).length,
         }));
+        
+        setInquiryStats({
+            totalInquiries: processedInquiries.length,
+            unreadInquiries: processedInquiries.filter(inq => !inq.isRead).length,
+            chartData: inquiryChartData
+        });
 
-        return { totalInquiries, unreadInquiries, chartData };
-    }, [processedInquiries]);
-
-    const productStats = useMemo(() => {
-        const today = startOfDay(new Date());
-        const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
-
-        const chartData = last7Days.map(day => ({
+        const productChartData = last7Days.map(day => ({
             date: format(day, 'MMM d'),
             products: processedProducts.filter(prod => isSameDay(prod.createdAt, day)).length,
         }));
         
-        return { chartData };
-    }, [processedProducts]);
+        setProductStats({
+            chartData: productChartData
+        });
 
+    }, [processedInquiries, processedProducts]);
 
     if (userLoading || shopsLoading || inquiriesLoading || productsLoading) {
         return (

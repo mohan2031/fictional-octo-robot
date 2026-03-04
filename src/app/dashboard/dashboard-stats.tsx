@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from 'react';
@@ -27,11 +28,31 @@ function StatCard({ title, value, icon: Icon }: { title: string, value: string |
     );
 }
 
+const initialInquiryStats = {
+    totalInquiries: 0,
+    unreadInquiries: 0,
+    chartData: Array.from({ length: 7 }, (_, i) => {
+        const day = subDays(new Date(), 6 - i);
+        return { date: format(day, 'MMM d'), inquiries: 0 };
+    }),
+};
+
+const initialAppointmentStats = {
+    totalAppointments: 0,
+    chartData: Array.from({ length: 7 }, (_, i) => {
+        const day = subDays(new Date(), 6 - i);
+        return { date: format(day, 'MMM d'), appointments: 0 };
+    }),
+};
+
 
 export function DashboardStats() {
     const firestore = useFirestore();
     const { user, loading: userLoading } = useUser();
     const [isClient, setIsClient] = useState(false);
+    
+    const [inquiryStats, setInquiryStats] = useState(initialInquiryStats);
+    const [appointmentStats, setAppointmentStats] = useState(initialAppointmentStats);
 
     useEffect(() => {
         setIsClient(true);
@@ -81,34 +102,33 @@ export function DashboardStats() {
         if (!appointmentDocs) return [];
         return appointmentDocs.map(mapToAppointment);
     }, [appointmentDocs]);
-
-    const inquiryStats = useMemo(() => {
-        const totalInquiries = processedInquiries.length;
-        const unreadInquiries = processedInquiries.filter(inq => !inq.isRead).length;
-
+    
+    useEffect(() => {
         const today = startOfDay(new Date());
         const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
 
-        const chartData = last7Days.map(day => ({
+        const inquiryChartData = last7Days.map(day => ({
             date: format(day, 'MMM d'),
             inquiries: processedInquiries.filter(inq => isSameDay(inq.createdAt, day)).length,
         }));
+        
+        setInquiryStats({
+            totalInquiries: processedInquiries.length,
+            unreadInquiries: processedInquiries.filter(inq => !inq.isRead).length,
+            chartData: inquiryChartData
+        });
 
-        return { totalInquiries, unreadInquiries, chartData };
-    }, [processedInquiries]);
-
-    const appointmentStats = useMemo(() => {
-        const totalAppointments = processedAppointments.length;
-        const today = startOfDay(new Date());
-        const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
-
-        const chartData = last7Days.map(day => ({
+        const appointmentChartData = last7Days.map(day => ({
             date: format(day, 'MMM d'),
             appointments: processedAppointments.filter(appt => isSameDay(appt.createdAt, day)).length,
         }));
         
-        return { totalAppointments, chartData };
-    }, [processedAppointments]);
+        setAppointmentStats({
+            totalAppointments: processedAppointments.length,
+            chartData: appointmentChartData,
+        });
+
+    }, [processedInquiries, processedAppointments]);
 
 
     if (userLoading || clinicsLoading || inquiriesLoading || appointmentsLoading) {
